@@ -10,6 +10,7 @@ from app.schemas.profile import (
     ProfileResponse,
     ProfileUpdateRequest,
     EmailChangeRequest,
+    PasswordChangeRequest,
 )
 from app.services.profiles import (
     DuplicateEmailError,
@@ -17,6 +18,7 @@ from app.services.profiles import (
     ProfileService,
     ProfileVersionConflictError,
     SameEmailError,
+    SamePasswordError,
 )
 
 router = APIRouter(prefix="/api/v1/profile", tags=["Profile"])
@@ -108,6 +110,37 @@ async def change_email(
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="error.email.same_as_current",
+        ) from exc
+
+    return build_profile_response(updated_profile)
+
+
+@router.patch("/password", response_model=ProfileResponse)
+async def change_password(
+    request: PasswordChangeRequest,
+    profile: Profile = Depends(get_current_profile),
+    session: AsyncSession = Depends(get_db_session),
+) -> ProfileResponse:
+    service = ProfileService(session)
+
+    try:
+        updated_profile = await service.change_password(
+            profile=profile, request=request
+        )
+    except ProfileVersionConflictError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="error.profile.version_conflict",
+        ) from exc
+    except InvalidCurrentPasswordError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="error.password.invalid_current",
+        ) from exc
+    except SamePasswordError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="error.password.same_as_current",
         ) from exc
 
     return build_profile_response(updated_profile)

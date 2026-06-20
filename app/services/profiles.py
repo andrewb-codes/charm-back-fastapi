@@ -4,7 +4,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.security import hash_password, verify_password
 from app.models.profile import Profile
 from app.repositories.profiles import ProfileRepository
-from app.schemas.profile import EmailChangeRequest, ProfileUpdateRequest
+from app.schemas.profile import (
+    EmailChangeRequest,
+    ProfileUpdateRequest,
+    PasswordChangeRequest,
+)
 
 
 class DuplicateEmailError(Exception):
@@ -28,6 +32,10 @@ class InvalidCurrentPasswordError(Exception):
 
 
 class SameEmailError(Exception):
+    pass
+
+
+class SamePasswordError(Exception):
     pass
 
 
@@ -112,5 +120,25 @@ class ProfileService:
         except IntegrityError as exc:
             await self.session.rollback()
             raise DuplicateEmailError from exc
+
+        return profile
+
+    async def change_password(
+        self, *, profile: Profile, request: PasswordChangeRequest
+    ) -> Profile:
+        if profile.version != request.version:
+            raise ProfileVersionConflictError
+
+        if not verify_password(request.current_password, profile.password):
+            raise InvalidCurrentPasswordError
+
+        if verify_password(request.new_password, profile.password):
+            raise SamePasswordError
+
+        profile.password = hash_password(request.new_password)
+        profile.version += 1
+
+        await self.session.commit()
+        await self.session.refresh(profile)
 
         return profile

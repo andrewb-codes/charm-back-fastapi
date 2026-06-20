@@ -41,3 +41,9 @@ class EmailChangeRequest(BaseModel):
     new_email: EmailStr
     current_password: str = Field(min_length=1)
     version: int
+
+
+class PasswordChangeRequest(BaseModel):
+    current_password: str = Field(min_length=1)
+    new_password: str = Field(min_length=6)
+    version: int
