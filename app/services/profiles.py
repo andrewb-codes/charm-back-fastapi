@@ -4,6 +4,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.security import hash_password, verify_password
 from app.models.profile import Profile
 from app.repositories.profiles import ProfileRepository
+from app.schemas.profile import ProfileUpdateRequest
 
 
 class DuplicateEmailError(Exception):
@@ -11,6 +12,14 @@ class DuplicateEmailError(Exception):
 
 
 class InvalidCredentialsError(Exception):
+    pass
+
+
+class ProfileNotFoundError(Exception):
+    pass
+
+
+class ProfileVersionConflictError(Exception):
     pass
 
 
@@ -47,5 +56,23 @@ class ProfileService:
 
         if not verify_password(password, profile.password):
             raise InvalidCredentialsError
+
+        return profile
+
+    async def update_profile(
+        self, *, profile: Profile, request: ProfileUpdateRequest
+    ) -> Profile:
+        if profile.version != request.version:
+            raise ProfileVersionConflictError
+
+        profile.name = request.name
+        profile.surname = request.surname
+        profile.birthdate = request.birthdate
+        profile.about = request.about
+        profile.gender = request.gender
+        profile.version += 1
+
+        await self.session.commit()
+        await self.session.refresh(profile)
 
         return profile

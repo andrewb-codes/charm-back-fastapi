@@ -1,10 +1,13 @@
 from datetime import date
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException, status
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.deps import get_current_profile
+from app.db.session import get_db_session
 from app.models.profile import Profile
-from app.schemas.profile import ProfileResponse
+from app.schemas.profile import ProfileResponse, ProfileUpdateRequest
+from app.services.profiles import ProfileService, ProfileVersionConflictError
 
 router = APIRouter(prefix="/api/v1/profile", tags=["Profile"])
 
@@ -45,3 +48,22 @@ async def get_profile(
     profile: Profile = Depends(get_current_profile),
 ) -> ProfileResponse:
     return build_profile_response(profile)
+
+
+@router.patch("", response_model=ProfileResponse)
+async def update_profile(
+    request: ProfileUpdateRequest,
+    profile: Profile = Depends(get_current_profile),
+    session: AsyncSession = Depends(get_db_session),
+) -> ProfileResponse:
+    service = ProfileService(session)
+
+    try:
+        updated_profile = await service.update_profile(profile=profile, request=request)
+    except ProfileVersionConflictError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="error.profile.version_conflict",
+        ) from exc
+
+    return build_profile_response(updated_profile)
