@@ -10,7 +10,7 @@ dependencies = [
   "psycopg[binary]>=3.2",
   "alembic>=1.13",
   "pydantic-settings>=2.4",
-  "passlib[bcrypt]>=1.7",
+  "pwdlib[argon2]>=0.2",
   "python-jose[cryptography]>=3.3",
   "email-validator>=2.2"
 ]
