@@ -1,11 +1,11 @@
-from fastapi import APIRouter, status, Depends, HTTPException
+from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings
 from app.core.security import create_access_token
 from app.db.session import get_db_session
 from app.schemas.auth import TokenResponse, LoginRequest
-from app.services.profiles import ProfileService, InvalidCredentialsError
+from app.services.profiles import ProfileService
 
 router = APIRouter(prefix="/api/v1/auth", tags=["Auth"])
 
@@ -16,14 +16,9 @@ async def login(
 ) -> TokenResponse:
     service = ProfileService(session)
 
-    try:
-        profile = await service.authenticate(
-            email=str(request.email), password=request.password
-        )
-    except InvalidCredentialsError as exc:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED, detail="error.credentials.invalid"
-        ) from exc
+    profile = await service.authenticate(
+        email=str(request.email), password=request.password
+    )
 
     access_token = create_access_token(
         user_id=profile.id, email=profile.email, role=profile.role.value

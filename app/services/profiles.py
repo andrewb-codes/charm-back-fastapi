@@ -9,30 +9,14 @@ from app.schemas.profile import (
     ProfileUpdateRequest,
     PasswordChangeRequest,
 )
-
-
-class DuplicateEmailError(Exception):
-    pass
-
-
-class InvalidCredentialsError(Exception):
-    pass
-
-
-class ProfileVersionConflictError(Exception):
-    pass
-
-
-class InvalidCurrentPasswordError(Exception):
-    pass
-
-
-class SameEmailError(Exception):
-    pass
-
-
-class SamePasswordError(Exception):
-    pass
+from app.core.exceptions import (
+    DuplicateEmailError,
+    InvalidCredentialsError,
+    InvalidCurrentPasswordError,
+    ProfileVersionConflictError,
+    SameEmailError,
+    SamePasswordError,
+)
 
 
 class ProfileService:
@@ -44,7 +28,7 @@ class ProfileService:
         normalized_email = email.strip().lower()
 
         if await self.repository.exists_by_email(normalized_email):
-            raise DuplicateEmailError
+            raise DuplicateEmailError()
 
         password_hash = hash_password(password)
 
@@ -64,10 +48,10 @@ class ProfileService:
         profile = await self.repository.get_by_email(normalized_email)
 
         if profile is None:
-            raise InvalidCredentialsError
+            raise InvalidCredentialsError()
 
         if not verify_password(password, profile.password):
-            raise InvalidCredentialsError
+            raise InvalidCredentialsError()
 
         return profile
 
@@ -78,7 +62,7 @@ class ProfileService:
         version = update_data.pop("version")
 
         if profile.version != version:
-            raise ProfileVersionConflictError
+            raise ProfileVersionConflictError()
 
         for field, value in update_data.items():
             setattr(profile, field, value)
@@ -94,18 +78,18 @@ class ProfileService:
         self, *, profile: Profile, request: EmailChangeRequest
     ) -> Profile:
         if profile.version != request.version:
-            raise ProfileVersionConflictError
+            raise ProfileVersionConflictError()
 
         if not verify_password(request.current_password, profile.password):
-            raise InvalidCurrentPasswordError
+            raise InvalidCurrentPasswordError()
 
         new_email = str(request.new_email).strip().lower()
 
         if new_email == profile.email:
-            raise SameEmailError
+            raise SameEmailError()
 
         if await self.repository.exists_by_email(new_email):
-            raise DuplicateEmailError
+            raise DuplicateEmailError()
 
         profile.email = new_email
         profile.version += 1
@@ -123,13 +107,13 @@ class ProfileService:
         self, *, profile: Profile, request: PasswordChangeRequest
     ) -> Profile:
         if profile.version != request.version:
-            raise ProfileVersionConflictError
+            raise ProfileVersionConflictError()
 
         if not verify_password(request.current_password, profile.password):
-            raise InvalidCurrentPasswordError
+            raise InvalidCurrentPasswordError()
 
         if verify_password(request.new_password, profile.password):
-            raise SamePasswordError
+            raise SamePasswordError()
 
         profile.password = hash_password(request.new_password)
         profile.version += 1

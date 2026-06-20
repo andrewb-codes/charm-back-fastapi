@@ -1,6 +1,6 @@
 from datetime import date
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.deps import get_current_profile
@@ -12,14 +12,7 @@ from app.schemas.profile import (
     EmailChangeRequest,
     PasswordChangeRequest,
 )
-from app.services.profiles import (
-    DuplicateEmailError,
-    InvalidCurrentPasswordError,
-    ProfileService,
-    ProfileVersionConflictError,
-    SameEmailError,
-    SamePasswordError,
-)
+from app.services.profiles import ProfileService
 
 router = APIRouter(prefix="/api/v1/profile", tags=["Profile"])
 
@@ -69,15 +62,7 @@ async def update_profile(
     session: AsyncSession = Depends(get_db_session),
 ) -> ProfileResponse:
     service = ProfileService(session)
-
-    try:
-        updated_profile = await service.update_profile(profile=profile, request=request)
-    except ProfileVersionConflictError as exc:
-        raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT,
-            detail="error.profile.version_conflict",
-        ) from exc
-
+    updated_profile = await service.update_profile(profile=profile, request=request)
     return build_profile_response(updated_profile)
 
 
@@ -88,30 +73,7 @@ async def change_email(
     session: AsyncSession = Depends(get_db_session),
 ) -> ProfileResponse:
     service = ProfileService(session)
-
-    try:
-        updated_profile = await service.change_email(profile=profile, request=request)
-    except ProfileVersionConflictError as exc:
-        raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT,
-            detail="error.profile.version_conflict",
-        ) from exc
-    except DuplicateEmailError as exc:
-        raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT,
-            detail="error.email.exists",
-        ) from exc
-    except InvalidCurrentPasswordError as exc:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="error.password.invalid_current",
-        ) from exc
-    except SameEmailError as exc:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="error.email.same_as_current",
-        ) from exc
-
+    updated_profile = await service.change_email(profile=profile, request=request)
     return build_profile_response(updated_profile)
 
 
@@ -122,27 +84,7 @@ async def change_password(
     session: AsyncSession = Depends(get_db_session),
 ) -> ProfileResponse:
     service = ProfileService(session)
-
-    try:
-        updated_profile = await service.change_password(
-            profile=profile, request=request
-        )
-    except ProfileVersionConflictError as exc:
-        raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT,
-            detail="error.profile.version_conflict",
-        ) from exc
-    except InvalidCurrentPasswordError as exc:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="error.password.invalid_current",
-        ) from exc
-    except SamePasswordError as exc:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="error.password.same_as_current",
-        ) from exc
-
+    updated_profile = await service.change_password(profile=profile, request=request)
     return build_profile_response(updated_profile)
 
 
