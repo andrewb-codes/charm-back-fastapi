@@ -22,3 +22,6 @@ class ProfileRepository:
     async def get_by_email(self, email: str) -> Profile | None:
         query = select(Profile).where(Profile.email == email)
         return await self.session.scalar(query)
+
+    async def get_by_id(self, profile_id: int) -> Profile | None:
+        return await self.session.get(Profile, profile_id)
