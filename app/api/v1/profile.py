@@ -36,7 +36,7 @@ def build_profile_response(profile: Profile) -> ProfileResponse:
         status=profile.status,
         role=profile.role,
         version=profile.version,
-        created_at=profile.created_date,
+        created_at=profile.created_at,
     )
 
 

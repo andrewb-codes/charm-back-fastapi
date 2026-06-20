@@ -51,7 +51,7 @@ class Profile(Base):
         server_default=Role.USER.value,
     )
 
-    created_date: Mapped[datetime] = mapped_column(
+    created_at: Mapped[datetime] = mapped_column(
         DateTime, nullable=False, server_default=func.now()
     )
     version: Mapped[int] = mapped_column(
