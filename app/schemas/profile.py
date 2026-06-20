@@ -1,6 +1,6 @@
 from datetime import date, datetime
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, Field, field_validator, EmailStr
 
 from app.models.profile import Gender, Role, Status
 
@@ -35,3 +35,9 @@ class ProfileUpdateRequest(BaseModel):
         if value is not None and value >= date.today():
             raise ValueError("birthdate must be in the past")
         return value
+
+
+class EmailChangeRequest(BaseModel):
+    new_email: EmailStr
+    current_password: str = Field(min_length=1)
+    version: int

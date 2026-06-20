@@ -6,8 +6,18 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.api.deps import get_current_profile
 from app.db.session import get_db_session
 from app.models.profile import Profile
-from app.schemas.profile import ProfileResponse, ProfileUpdateRequest
-from app.services.profiles import ProfileService, ProfileVersionConflictError
+from app.schemas.profile import (
+    ProfileResponse,
+    ProfileUpdateRequest,
+    EmailChangeRequest,
+)
+from app.services.profiles import (
+    DuplicateEmailError,
+    InvalidCurrentPasswordError,
+    ProfileService,
+    ProfileVersionConflictError,
+    SameEmailError,
+)
 
 router = APIRouter(prefix="/api/v1/profile", tags=["Profile"])
 
@@ -64,6 +74,40 @@ async def update_profile(
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
             detail="error.profile.version_conflict",
+        ) from exc
+
+    return build_profile_response(updated_profile)
+
+
+@router.patch("/email", response_model=ProfileResponse)
+async def change_email(
+    request: EmailChangeRequest,
+    profile: Profile = Depends(get_current_profile),
+    session: AsyncSession = Depends(get_db_session),
+) -> ProfileResponse:
+    service = ProfileService(session)
+
+    try:
+        updated_profile = await service.change_email(profile=profile, request=request)
+    except ProfileVersionConflictError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="error.profile.version_conflict",
+        ) from exc
+    except DuplicateEmailError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="error.email.exists",
+        ) from exc
+    except InvalidCurrentPasswordError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="error.password.invalid_current",
+        ) from exc
+    except SameEmailError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="error.email.same_as_current",
         ) from exc
 
     return build_profile_response(updated_profile)
