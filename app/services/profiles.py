@@ -1,11 +1,16 @@
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.security import hash_password
+from app.core.security import hash_password, verify_password
+from app.models.profile import Profile
 from app.repositories.profiles import ProfileRepository
 
 
 class DuplicateEmailError(Exception):
+    pass
+
+
+class InvalidCredentialsError(Exception):
     pass
 
 
@@ -32,3 +37,15 @@ class ProfileService:
             raise DuplicateEmailError from exc
 
         return profile.id
+
+    async def authenticate(self, *, email: str, password: str) -> Profile:
+        normalized_email = email.strip().lower()
+        profile = await self.repository.get_by_email(normalized_email)
+
+        if profile is None:
+            raise InvalidCredentialsError
+
+        if not verify_password(password, profile.password):
+            raise InvalidCredentialsError
+
+        return profile

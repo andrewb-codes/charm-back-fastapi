@@ -18,3 +18,7 @@ class ProfileRepository:
         self.session.add(profile)
         await self.session.flush()
         return profile
+
+    async def get_by_email(self, email: str) -> Profile | None:
+        query = select(Profile).where(Profile.email == email)
+        return await self.session.scalar(query)
