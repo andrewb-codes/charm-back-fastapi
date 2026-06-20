@@ -101,12 +101,12 @@ async def change_email(
         ) from exc
     except InvalidCurrentPasswordError as exc:
         raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT,
+            status_code=status.HTTP_400_BAD_REQUEST,
             detail="error.password.invalid_current",
         ) from exc
     except SameEmailError as exc:
         raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT,
+            status_code=status.HTTP_400_BAD_REQUEST,
             detail="error.email.same_as_current",
         ) from exc
 
