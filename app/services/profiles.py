@@ -19,10 +19,6 @@ class InvalidCredentialsError(Exception):
     pass
 
 
-class ProfileNotFoundError(Exception):
-    pass
-
-
 class ProfileVersionConflictError(Exception):
     pass
 
@@ -142,3 +138,7 @@ class ProfileService:
         await self.session.refresh(profile)
 
         return profile
+
+    async def delete_profile(self, *, profile: Profile) -> None:
+        await self.repository.delete(profile)
+        await self.session.commit()

@@ -25,3 +25,6 @@ class ProfileRepository:
 
     async def get_by_id(self, profile_id: int) -> Profile | None:
         return await self.session.get(Profile, profile_id)
+
+    async def delete(self, profile: Profile) -> None:
+        await self.session.delete(profile)

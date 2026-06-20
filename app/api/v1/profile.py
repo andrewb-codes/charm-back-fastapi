@@ -144,3 +144,12 @@ async def change_password(
         ) from exc
 
     return build_profile_response(updated_profile)
+
+
+@router.delete("", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_profile(
+    profile: Profile = Depends(get_current_profile),
+    session: AsyncSession = Depends(get_db_session),
+) -> None:
+    service = ProfileService(session)
+    await service.delete_profile(profile=profile)
