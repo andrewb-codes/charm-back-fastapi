@@ -1,0 +1,59 @@
+import enum
+from datetime import date, datetime
+
+from sqlalchemy import BigInteger, String, Date, Text, Enum, DateTime, func, Integer
+from sqlalchemy.orm import Mapped, mapped_column
+
+from app.db.base import Base
+
+
+class Gender(str, enum.Enum):
+    MALE = "MALE"
+    FEMALE = "FEMALE"
+    OTHER = "OTHER"
+
+
+class Role(str, enum.Enum):
+    ADMIN = "ADMIN"
+    USER = "USER"
+
+
+class Status(str, enum.Enum):
+    ACTIVE = "ACTIVE"
+    INACTIVE = "INACTIVE"
+
+
+class Profile(Base):
+    __tablename__ = "profile"
+
+    id: Mapped[int] = mapped_column(BigInteger, primary_key=True)
+
+    email: Mapped[str] = mapped_column(String, nullable=False, unique=True, index=True)
+    password: Mapped[str] = mapped_column(String(255), nullable=False)
+
+    name: Mapped[str | None] = mapped_column(String)
+    surname: Mapped[str | None] = mapped_column(String)
+    birthdate: Mapped[date | None] = mapped_column(Date)
+    about: Mapped[str | None] = mapped_column(Text)
+    gender: Mapped[Gender | None] = mapped_column(Enum(Gender, name="gender"))
+    photo: Mapped[str | None] = mapped_column(String)
+
+    status: Mapped[Status] = mapped_column(
+        Enum(Status, name="status"),
+        nullable=False,
+        default=Status.INACTIVE,
+        server_default=Status.INACTIVE.value,
+    )
+    role: Mapped[Role] = mapped_column(
+        Enum(Role, name="role"),
+        nullable=False,
+        default=Role.USER,
+        server_default=Role.USER.value,
+    )
+
+    created_date: Mapped[datetime] = mapped_column(
+        DateTime, nullable=False, server_default=func.now()
+    )
+    version: Mapped[int] = mapped_column(
+        Integer, nullable=False, default=0, server_default="0"
+    )
