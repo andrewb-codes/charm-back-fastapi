@@ -36,3 +36,8 @@ class SamePasswordError(AppError):
 class UnauthorizedError(AppError):
     status_code = 401
     detail = "error.auth.unauthorized"
+
+
+class SelfLikeError(AppError):
+    status_code = 400
+    detail = "error.charm.self_like"
