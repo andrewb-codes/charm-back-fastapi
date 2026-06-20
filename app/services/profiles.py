@@ -62,14 +62,15 @@ class ProfileService:
     async def update_profile(
         self, *, profile: Profile, request: ProfileUpdateRequest
     ) -> Profile:
-        if profile.version != request.version:
+        update_data = request.model_dump(exclude_unset=True)
+        version = update_data.pop("version")
+
+        if profile.version != version:
             raise ProfileVersionConflictError
 
-        profile.name = request.name
-        profile.surname = request.surname
-        profile.birthdate = request.birthdate
-        profile.about = request.about
-        profile.gender = request.gender
+        for field, value in update_data.items():
+            setattr(profile, field, value)
+
         profile.version += 1
 
         await self.session.commit()
