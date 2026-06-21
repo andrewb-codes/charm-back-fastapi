@@ -1,12 +1,10 @@
 from datetime import date
 
-from app.api.deps import get_current_profile
-from app.db.session import get_db_session
+from app.api.deps import get_current_profile, get_charm_service
 from app.models import Profile
 from app.schemas.charm import CharmRequest, NextCharmResponse, CharmProfileResponse
 from app.services.charm import CharmService
 from fastapi import APIRouter, Depends, status
-from sqlalchemy.ext.asyncio import AsyncSession
 
 router = APIRouter(prefix="/api/v1/charm", tags=["Charm"])
 
@@ -40,10 +38,8 @@ def build_charm_profile_response(profile: Profile) -> CharmProfileResponse:
 async def react(
     request: CharmRequest,
     profile: Profile = Depends(get_current_profile),
-    session: AsyncSession = Depends(get_db_session),
+    service: CharmService = Depends(get_charm_service),
 ) -> None:
-    service = CharmService(session)
-
     await service.react(
         from_profile_id=profile.id,
         to_profile_id=request.to_profile_id,
@@ -54,9 +50,8 @@ async def react(
 @router.get("", response_model=NextCharmResponse)
 async def get_next(
     profile: Profile = Depends(get_current_profile),
-    session: AsyncSession = Depends(get_db_session),
+    service: CharmService = Depends(get_charm_service),
 ) -> NextCharmResponse:
-    service = CharmService(session)
     candidate = await service.get_next(profile=profile)
 
     return NextCharmResponse(

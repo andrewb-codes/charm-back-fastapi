@@ -1,9 +1,8 @@
 from fastapi import APIRouter, Depends
-from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.api.deps import get_profile_service
 from app.core.config import settings
 from app.core.security import create_access_token
-from app.db.session import get_db_session
 from app.schemas.auth import TokenResponse, LoginRequest
 from app.services.profiles import ProfileService
 
@@ -12,10 +11,8 @@ router = APIRouter(prefix="/api/v1/auth", tags=["Auth"])
 
 @router.post("/login", response_model=TokenResponse)
 async def login(
-    request: LoginRequest, session: AsyncSession = Depends(get_db_session)
+    request: LoginRequest, service: ProfileService = Depends(get_profile_service)
 ) -> TokenResponse:
-    service = ProfileService(session)
-
     profile = await service.authenticate(
         email=str(request.email), password=request.password
     )

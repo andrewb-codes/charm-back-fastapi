@@ -1,10 +1,8 @@
 from datetime import date
 
 from fastapi import APIRouter, Depends, status
-from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.api.deps import get_current_profile
-from app.db.session import get_db_session
+from app.api.deps import get_current_profile, get_profile_service
 from app.models.profile import Profile
 from app.schemas.profile import (
     ProfileResponse,
@@ -59,9 +57,8 @@ async def get_profile(
 async def update_profile(
     request: ProfileUpdateRequest,
     profile: Profile = Depends(get_current_profile),
-    session: AsyncSession = Depends(get_db_session),
+    service: ProfileService = Depends(get_profile_service),
 ) -> ProfileResponse:
-    service = ProfileService(session)
     updated_profile = await service.update_profile(profile=profile, request=request)
     return build_profile_response(updated_profile)
 
@@ -70,9 +67,8 @@ async def update_profile(
 async def change_email(
     request: EmailChangeRequest,
     profile: Profile = Depends(get_current_profile),
-    session: AsyncSession = Depends(get_db_session),
+    service: ProfileService = Depends(get_profile_service),
 ) -> ProfileResponse:
-    service = ProfileService(session)
     updated_profile = await service.change_email(profile=profile, request=request)
     return build_profile_response(updated_profile)
 
@@ -81,9 +77,8 @@ async def change_email(
 async def change_password(
     request: PasswordChangeRequest,
     profile: Profile = Depends(get_current_profile),
-    session: AsyncSession = Depends(get_db_session),
+    service: ProfileService = Depends(get_profile_service),
 ) -> ProfileResponse:
-    service = ProfileService(session)
     updated_profile = await service.change_password(profile=profile, request=request)
     return build_profile_response(updated_profile)
 
@@ -91,7 +86,6 @@ async def change_password(
 @router.delete("", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_profile(
     profile: Profile = Depends(get_current_profile),
-    session: AsyncSession = Depends(get_db_session),
+    service: ProfileService = Depends(get_profile_service),
 ) -> None:
-    service = ProfileService(session)
     await service.delete_profile(profile=profile)
