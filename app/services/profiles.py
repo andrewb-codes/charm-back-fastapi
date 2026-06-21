@@ -126,3 +126,25 @@ class ProfileService:
     async def delete_profile(self, *, profile: Profile) -> None:
         await self.repository.delete(profile)
         await self.session.commit()
+
+    async def get_matches(
+        self, *, profile_id: int, page: int, page_size: int
+    ) -> tuple[list[Profile], bool]:
+        normalized_page = max(page, 1)
+        normalized_page_size = max(page_size, 1)
+
+        limit = normalized_page_size + 1
+        offset = (normalized_page - 1) * normalized_page_size
+
+        items = await self.repository.get_matches(
+            profile_id=profile_id,
+            limit=limit,
+            offset=offset,
+        )
+
+        has_next = len(items) > normalized_page_size
+
+        if has_next:
+            items = items[:normalized_page_size]
+
+        return items, has_next

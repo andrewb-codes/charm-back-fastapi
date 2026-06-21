@@ -1,5 +1,5 @@
 from app.models import ProfileLike, Status
-from sqlalchemy import and_, func, or_, select
+from sqlalchemy import and_, func, or_, select, case
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.profile import Profile
@@ -58,3 +58,28 @@ class ProfileRepository:
             )
 
         return await self.session.scalar(query)
+
+    async def get_matches(
+        self, profile_id: int, limit: int, offset: int
+    ) -> list[Profile]:
+        matched_profile_id = case(
+            (ProfileLike.a_profile == profile_id, ProfileLike.b_profile),
+            (ProfileLike.b_profile == profile_id, ProfileLike.a_profile),
+        )
+
+        query = (
+            select(Profile)
+            .select_from(ProfileLike)
+            .join(Profile, Profile.id == matched_profile_id)
+            .where(
+                (ProfileLike.a_profile == profile_id)
+                | (ProfileLike.b_profile == profile_id)
+            )
+            .where(ProfileLike.liked_a.is_(True), ProfileLike.liked_b.is_(True))
+            .order_by(ProfileLike.updated_at.desc())
+            .limit(limit)
+            .offset(offset)
+        )
+
+        result = await self.session.scalars(query)
+        return list(result)

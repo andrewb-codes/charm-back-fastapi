@@ -47,3 +47,8 @@ class PasswordChangeRequest(BaseModel):
     current_password: str = Field(min_length=1)
     new_password: str = Field(min_length=6)
     version: int
+
+
+class MatchesResponse(BaseModel):
+    items: list[ProfileResponse]
+    has_next: bool
