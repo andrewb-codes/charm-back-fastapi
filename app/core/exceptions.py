@@ -41,3 +41,8 @@ class UnauthorizedError(AppError):
 class SelfLikeError(AppError):
     status_code = 400
     detail = "error.charm.self_like"
+
+
+class ForbiddenError(AppError):
+    status_code = 403
+    detail = "error.auth.forbidden"

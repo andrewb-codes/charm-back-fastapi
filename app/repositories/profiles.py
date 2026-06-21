@@ -1,8 +1,6 @@
-from app.models import ProfileLike, Status
+from app.models import ProfileLike, Profile, Role, Status
 from sqlalchemy import and_, func, or_, select, case
 from sqlalchemy.ext.asyncio import AsyncSession
-
-from app.models.profile import Profile
 
 
 class ProfileRepository:
@@ -80,6 +78,36 @@ class ProfileRepository:
             .limit(limit)
             .offset(offset)
         )
+
+        result = await self.session.scalars(query)
+        return list(result)
+
+    async def search_profiles(
+        self,
+        email_starts_with: str | None,
+        name_starts_with: str | None,
+        surname_starts_with: str | None,
+        role: Role | None,
+        status: Status | None,
+        limit: int,
+        offset: int,
+    ) -> list[Profile]:
+        query = select(Profile).order_by(Profile.id.asc()).limit(limit).offset(offset)
+
+        if email_starts_with:
+            query = query.where(Profile.email.ilike(f"{email_starts_with}%"))
+
+        if name_starts_with:
+            query = query.where(Profile.name.ilike(f"{name_starts_with}%"))
+
+        if surname_starts_with:
+            query = query.where(Profile.surname.ilike(f"{surname_starts_with}%"))
+
+        if role is not None:
+            query = query.where(Profile.role == role)
+
+        if status is not None:
+            query = query.where(Profile.status == status)
 
         result = await self.session.scalars(query)
         return list(result)

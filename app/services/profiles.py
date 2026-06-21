@@ -2,7 +2,7 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.security import hash_password, verify_password
-from app.models.profile import Profile
+from app.models.profile import Profile, Role, Status
 from app.repositories.profiles import ProfileRepository
 from app.schemas.profile import (
     EmailChangeRequest,
@@ -138,6 +138,40 @@ class ProfileService:
 
         items = await self.repository.get_matches(
             profile_id=profile_id,
+            limit=limit,
+            offset=offset,
+        )
+
+        has_next = len(items) > normalized_page_size
+
+        if has_next:
+            items = items[:normalized_page_size]
+
+        return items, has_next
+
+    async def search_profiles(
+        self,
+        *,
+        email_starts_with: str | None,
+        name_starts_with: str | None,
+        surname_starts_with: str | None,
+        role: Role | None,
+        status: Status | None,
+        page: int,
+        page_size: int,
+    ) -> tuple[list[Profile], bool]:
+        normalized_page = max(page, 1)
+        normalized_page_size = max(page_size, 1)
+
+        limit = normalized_page_size + 1
+        offset = (normalized_page - 1) * normalized_page_size
+
+        items = await self.repository.search_profiles(
+            email_starts_with=email_starts_with,
+            name_starts_with=name_starts_with,
+            surname_starts_with=surname_starts_with,
+            role=role,
+            status=status,
             limit=limit,
             offset=offset,
         )

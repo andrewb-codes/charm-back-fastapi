@@ -52,3 +52,8 @@ class PasswordChangeRequest(BaseModel):
 class MatchesResponse(BaseModel):
     items: list[ProfileResponse]
     has_next: bool
+
+
+class ProfilesPageResponse(BaseModel):
+    items: list[ProfileResponse]
+    has_next: bool

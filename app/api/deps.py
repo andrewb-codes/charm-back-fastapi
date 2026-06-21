@@ -2,10 +2,10 @@ from fastapi import Depends
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.exceptions import UnauthorizedError
+from app.core.exceptions import UnauthorizedError, ForbiddenError
 from app.core.security import InvalidTokenError, decode_access_token
 from app.db.session import get_db_session
-from app.models.profile import Profile
+from app.models.profile import Profile, Role
 from app.repositories.profiles import ProfileRepository
 from app.services.charm import CharmService
 from app.services.profiles import ProfileService
@@ -43,5 +43,12 @@ async def get_current_profile(
 
     if profile is None:
         raise UnauthorizedError()
+
+    return profile
+
+
+def require_admin(profile: Profile = Depends(get_current_profile)) -> Profile:
+    if profile.role != Role.ADMIN:
+        raise ForbiddenError()
 
     return profile
