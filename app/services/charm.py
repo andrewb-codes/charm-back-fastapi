@@ -3,11 +3,15 @@ from app.repositories.profile_likes import ProfileLikeRepository
 from app.schemas.charm import CharmAction
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.models.profile import Profile
+from app.repositories.profiles import ProfileRepository
+
 
 class CharmService:
     def __init__(self, session: AsyncSession) -> None:
         self.session = session
-        self.repository = ProfileLikeRepository(session)
+        self.profile_repository = ProfileRepository(session)
+        self.profile_like_repository = ProfileLikeRepository(session)
 
     async def react(
         self, *, from_profile_id: int, to_profile_id: int, action: CharmAction
@@ -18,10 +22,13 @@ class CharmService:
         if action == CharmAction.SKIP:
             return
 
-        await self.repository.set_like(
+        await self.profile_like_repository.set_like(
             from_profile_id=from_profile_id,
             to_profile_id=to_profile_id,
             liked=action == CharmAction.LIKE,
         )
 
         await self.session.commit()
+
+    async def get_next(self, *, profile: Profile) -> Profile | None:
+        return await self.profile_repository.get_next_charm_candidate(profile)
