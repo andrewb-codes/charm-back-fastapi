@@ -21,6 +21,17 @@ class ProfileResponse(BaseModel):
     created_at: datetime
 
 
+class PublicProfileResponse(BaseModel):
+    id: int
+    name: str | None
+    surname: str | None
+    birthdate: date | None
+    age: int | None
+    about: str | None
+    gender: Gender | None
+    photo: str | None
+
+
 class ProfileUpdateRequest(BaseModel):
     name: str | None = Field(default=None, max_length=100)
     surname: str | None = Field(default=None, max_length=100)
@@ -50,7 +61,7 @@ class PasswordChangeRequest(BaseModel):
 
 
 class MatchesResponse(BaseModel):
-    items: list[ProfileResponse]
+    items: list[PublicProfileResponse]
     has_next: bool
 
 

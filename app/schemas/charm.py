@@ -1,7 +1,8 @@
 import enum
-from datetime import date
 
 from pydantic import BaseModel, Field
+
+from app.schemas.profile import PublicProfileResponse
 
 
 class CharmAction(str, enum.Enum):
@@ -15,15 +16,5 @@ class CharmRequest(BaseModel):
     action: CharmAction
 
 
-class CharmProfileResponse(BaseModel):
-    id: int
-    name: str | None
-    surname: str | None
-    birthdate: date | None
-    age: int | None
-    about: str | None
-    photo: str | None
-
-
 class NextCharmResponse(BaseModel):
-    profile: CharmProfileResponse | None
+    profile: PublicProfileResponse | None

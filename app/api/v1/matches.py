@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Query, Depends
 
 from app.api.deps import get_current_profile, get_profile_service
-from app.api.presenters.profile import build_profile_response
+from app.api.presenters.profile import build_public_profile_response
 
 from app.models import Profile
 from app.schemas.profile import MatchesResponse
@@ -24,6 +24,6 @@ async def get_matches(
     )
 
     return MatchesResponse(
-        items=[build_profile_response(item) for item in items],
+        items=[build_public_profile_response(item) for item in items],
         has_next=has_next,
     )
