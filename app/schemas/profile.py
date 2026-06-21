@@ -54,6 +54,16 @@ class MatchesResponse(BaseModel):
     has_next: bool
 
 
-class ProfilesPageResponse(BaseModel):
+class AdminProfilesPageResponse(BaseModel):
     items: list[ProfileResponse]
     has_next: bool
+
+
+class AdminProfileStatusUpdateRequest(BaseModel):
+    status: Status
+    version: int = Field(ge=0)
+
+
+class AdminProfileRoleUpdateRequest(BaseModel):
+    role: Role
+    version: int = Field(ge=0)

@@ -5,6 +5,8 @@ from app.core.security import hash_password, verify_password
 from app.models.profile import Profile, Role, Status
 from app.repositories.profiles import ProfileRepository
 from app.schemas.profile import (
+    AdminProfileRoleUpdateRequest,
+    AdminProfileStatusUpdateRequest,
     EmailChangeRequest,
     ProfileUpdateRequest,
     PasswordChangeRequest,
@@ -16,6 +18,8 @@ from app.core.exceptions import (
     ProfileVersionConflictError,
     SameEmailError,
     SamePasswordError,
+    AdminSelfModificationError,
+    ProfileNotFoundError,
 )
 
 
@@ -182,3 +186,55 @@ class ProfileService:
             items = items[:normalized_page_size]
 
         return items, has_next
+
+    async def change_profile_status(
+        self,
+        *,
+        admin_profile: Profile,
+        profile_id: int,
+        request: AdminProfileStatusUpdateRequest,
+    ) -> Profile:
+        if admin_profile.id == profile_id:
+            raise AdminSelfModificationError()
+
+        profile = await self.repository.get_by_id(profile_id)
+
+        if profile is None:
+            raise ProfileNotFoundError()
+
+        if profile.version != request.version:
+            raise ProfileVersionConflictError()
+
+        profile.status = request.status
+        profile.version += 1
+
+        await self.session.commit()
+        await self.session.refresh(profile)
+
+        return profile
+
+    async def change_profile_role(
+        self,
+        *,
+        admin_profile: Profile,
+        profile_id: int,
+        request: AdminProfileRoleUpdateRequest,
+    ) -> Profile:
+        if admin_profile.id == profile_id:
+            raise AdminSelfModificationError()
+
+        profile = await self.repository.get_by_id(profile_id)
+
+        if profile is None:
+            raise ProfileNotFoundError()
+
+        if profile.version != request.version:
+            raise ProfileVersionConflictError()
+
+        profile.role = request.role
+        profile.version += 1
+
+        await self.session.commit()
+        await self.session.refresh(profile)
+
+        return profile

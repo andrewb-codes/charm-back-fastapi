@@ -46,3 +46,13 @@ class SelfLikeError(AppError):
 class ForbiddenError(AppError):
     status_code = 403
     detail = "error.auth.forbidden"
+
+
+class ProfileNotFoundError(AppError):
+    status_code = 404
+    detail = "error.profile.not_found"
+
+
+class AdminSelfModificationError(AppError):
+    status_code = 400
+    detail = "error.admin.self_modification"
