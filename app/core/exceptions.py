@@ -5,12 +5,12 @@ class AppError(Exception):
 
 class DuplicateEmailError(AppError):
     status_code = 409
-    detail = "error.email.exists"
+    detail = "error.email.already_exists"
 
 
 class InvalidCredentialsError(AppError):
     status_code = 401
-    detail = "error.credentials.invalid"
+    detail = "error.auth.invalid_credentials"
 
 
 class ProfileVersionConflictError(AppError):
