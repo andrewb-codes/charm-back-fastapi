@@ -43,3 +43,18 @@ async def activate_profile(
             },
         )
         await session.commit()
+
+
+async def make_admin(profile_id: int) -> None:
+    async with AsyncSessionLocal() as session:
+        await session.execute(
+            text(
+                """
+                UPDATE profile
+                SET role = 'ADMIN'
+                WHERE id = :profile_id
+                """
+            ),
+            {"profile_id": profile_id},
+        )
+        await session.commit()
