@@ -16,7 +16,7 @@ REST API для приложения Charm на FastAPI.
 - pwdlib Argon2 для хеширования паролей
 - python-jose для JWT
 - email-validator
-- Docker Compose для локального PostgreSQL
+- Docker и Docker Compose для локального запуска API/PostgreSQL
 - uv для окружения, зависимостей и запуска команд
 - pytest, pytest-asyncio, HTTPX для API-тестов
 - Ruff и mypy для статических проверок
@@ -75,20 +75,7 @@ PATCH /api/v1/admin/profiles/{profile_id}/status
 PATCH /api/v1/admin/profiles/{profile_id}/role
 ```
 
-## Локальный Запуск
-
-Создать и активировать виртуальное окружение:
-
-```bash
-uv venv
-source .venv/bin/activate
-```
-
-Установить зависимости:
-
-```bash
-uv sync --extra dev
-```
+## Локальный Запуск В Docker Compose
 
 Создать локальный файл окружения:
 
@@ -98,28 +85,29 @@ cp .env.example .env
 
 Основные переменные окружения:
 
-- `DATABASE_URL` — async URL для приложения, например `postgresql+asyncpg://charm:charm@localhost:5433/charm`.
+- `API_PORT` — порт API на хосте, например `8000`.
+- `DATABASE_URL` — async URL для приложения внутри compose-сети, например `postgresql+asyncpg://charm_user:charm_password@postgres:5432/charm`.
 - `JWT_SECRET` — секрет для подписи JWT.
 - `JWT_TTL_MINUTES` — время жизни access token.
 - `BACKEND_CORS_ORIGINS` — список frontend origin через запятую, например `http://localhost:5173,http://127.0.0.1:5173`.
 - `POSTGRES_DB`, `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_PORT` — настройки локального контейнера PostgreSQL.
 
-Запустить PostgreSQL:
+Собрать образ и запустить PostgreSQL:
 
 ```bash
-docker compose up -d
+docker compose up --build -d postgres
 ```
 
 Применить миграции:
 
 ```bash
-uv run alembic upgrade head
+docker compose run --rm api uv run alembic upgrade head
 ```
 
 Запустить API:
 
 ```bash
-uv run uvicorn app.main:app --reload
+docker compose up -d api
 ```
 
 Проверка health endpoint:
@@ -132,6 +120,18 @@ Swagger UI:
 
 ```text
 http://127.0.0.1:8000/docs
+```
+
+Остановить контейнеры:
+
+```bash
+docker compose down
+```
+
+Удалить volume с локальными данными:
+
+```bash
+docker compose down -v
 ```
 
 ## Структура
@@ -173,7 +173,8 @@ uv run alembic downgrade -1
 ## Тесты
 
 Тесты используют отдельную базу данных `charm_test`, чтобы не очищать локальную
-dev-БД.
+dev-БД. API-контейнер для тестов не нужен: тесты запускают FastAPI-приложение
+напрямую через `httpx.AsyncClient` и `ASGITransport`. Нужен только PostgreSQL.
 
 Создать локальный файл окружения для тестов:
 
@@ -181,12 +182,20 @@ dev-БД.
 cp .env.test.example .env.test
 ```
 
-Создать тестовую базу:
+Запустить PostgreSQL:
 
 ```bash
-docker compose exec postgres psql -U charm -d charm \
+docker compose up -d postgres
+```
+
+Создать тестовую базу один раз:
+
+```bash
+docker compose exec postgres psql -U charm_user -d charm \
   -c "CREATE DATABASE charm_test;"
 ```
+
+Если база уже создана, команда вернет ошибку `already exists`; это нормально.
 
 Применить миграции к тестовой базе:
 
@@ -236,3 +245,4 @@ CI в GitHub Actions запускает:
 - `.env.example` и `.env.test.example` коммитятся как шаблоны.
 - `uv.lock` коммитится для воспроизводимой установки зависимостей.
 - Тесты используют `httpx.AsyncClient` с `ASGITransport`, поэтому запускать `uvicorn` для тестов не нужно.
+- Docker image не запускает миграции автоматически; миграции выполняются отдельной командой.
