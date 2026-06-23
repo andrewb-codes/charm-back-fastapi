@@ -75,7 +75,7 @@ PATCH /api/v1/admin/profiles/{profile_id}/status
 PATCH /api/v1/admin/profiles/{profile_id}/role
 ```
 
-## Локальный Запуск В Docker Compose
+## Локальный запуск В Docker Compose
 
 Создать локальный файл окружения:
 
@@ -219,7 +219,7 @@ ENV_FILE=.env.test uv run pytest
 - admin profile search и admin-действия;
 - CORS preflight для разрешенного frontend origin.
 
-## Проверки Кода
+## Проверки кода
 
 ```bash
 uv run ruff format .
@@ -237,7 +237,7 @@ CI в GitHub Actions запускает:
 - `mypy app`;
 - `pytest`.
 
-## Заметки Для Разработки
+## Заметки
 
 - Приложение подключается к БД через `asyncpg`.
 - Alembic-миграции подключаются к БД через синхронный `psycopg`.
