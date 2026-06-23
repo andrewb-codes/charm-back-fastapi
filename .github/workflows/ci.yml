@@ -1,0 +1,62 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_DB: charm_test
+          POSTGRES_USER: charm
+          POSTGRES_PASSWORD: charm
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U charm -d charm_test"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 10
+
+    env:
+      APP_NAME: Charm API Test
+      DEBUG: "false"
+      DATABASE_URL: postgresql+asyncpg://charm:charm@localhost:5432/charm_test
+      JWT_SECRET: test-secret
+      JWT_TTL_MINUTES: "60"
+      BACKEND_CORS_ORIGINS: http://localhost:5173,http://127.0.0.1:5173
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v5
+
+      - name: Install dependencies
+        run: uv sync --extra dev --locked
+
+      - name: Apply migrations
+        run: uv run alembic upgrade head
+
+      - name: Check formatting
+        run: uv run ruff format --check .
+
+      - name: Run ruff
+        run: uv run ruff check .
+
+      - name: Run mypy
+        run: uv run mypy app
+
+      - name: Run tests
+        run: uv run pytest

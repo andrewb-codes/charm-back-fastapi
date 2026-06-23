@@ -20,6 +20,7 @@ REST API для приложения Charm на FastAPI.
 - uv для окружения, зависимостей и запуска команд
 - pytest, pytest-asyncio, HTTPX для API-тестов
 - Ruff и mypy для статических проверок
+- GitHub Actions для CI
 
 ## Возможности API
 
@@ -33,6 +34,46 @@ REST API для приложения Charm на FastAPI.
 - Admin profiles: поиск профилей, смена статуса и роли.
 - CORS-настройка для подключения browser frontend.
 - Единый формат ошибок вида `{"detail": "error.<domain>.<reason>"}`.
+
+## API Endpoints
+
+Auth:
+
+```text
+POST /api/v1/registration
+POST /api/v1/auth/login
+```
+
+Profile:
+
+```text
+GET    /api/v1/profile
+PATCH  /api/v1/profile
+PATCH  /api/v1/profile/email
+PATCH  /api/v1/profile/password
+DELETE /api/v1/profile
+```
+
+Charm:
+
+```text
+GET  /api/v1/charm
+POST /api/v1/charm
+```
+
+Matches:
+
+```text
+GET /api/v1/matches
+```
+
+Admin:
+
+```text
+GET   /api/v1/admin/profiles
+PATCH /api/v1/admin/profiles/{profile_id}/status
+PATCH /api/v1/admin/profiles/{profile_id}/role
+```
 
 ## Локальный Запуск
 
@@ -166,7 +207,7 @@ ENV_FILE=.env.test uv run pytest
 - смена email и пароля;
 - charm discovery и реакции;
 - matches и пагинация;
-- admin profile search и admin-действия.
+- admin profile search и admin-действия;
 - CORS preflight для разрешенного frontend origin.
 
 ## Проверки Кода
@@ -175,8 +216,17 @@ ENV_FILE=.env.test uv run pytest
 uv run ruff format .
 uv run ruff check .
 uv run mypy app
-uv run pytest
+ENV_FILE=.env.test uv run pytest
 ```
+
+CI в GitHub Actions запускает:
+
+- установку зависимостей через `uv sync --extra dev --locked`;
+- применение Alembic-миграций к PostgreSQL service;
+- `ruff format --check`;
+- `ruff check`;
+- `mypy app`;
+- `pytest`.
 
 ## Заметки Для Разработки
 
