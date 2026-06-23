@@ -12,11 +12,24 @@ class Settings(BaseSettings):
     jwt_secret: str
     jwt_ttl_minutes: int = 60
 
+    backend_cors_origins: str = ""
+
     model_config = SettingsConfigDict(
         env_file=os.getenv("ENV_FILE", ".env"),
         env_file_encoding="utf-8",
         extra="ignore",
     )
+
+    @property
+    def cors_origins(self) -> list[str]:
+        if not self.backend_cors_origins:
+            return []
+
+        return [
+            origin.strip()
+            for origin in self.backend_cors_origins.split(",")
+            if origin.strip()
+        ]
 
 
 settings = Settings()  # type: ignore[call-arg]

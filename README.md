@@ -31,6 +31,7 @@ REST API для приложения Charm на FastAPI.
 - Charm discovery: получение следующего кандидата и реакции `like`, `dislike`, `skip`.
 - Matches: список взаимных лайков с пагинацией.
 - Admin profiles: поиск профилей, смена статуса и роли.
+- CORS-настройка для подключения browser frontend.
 - Единый формат ошибок вида `{"detail": "error.<domain>.<reason>"}`.
 
 ## Локальный Запуск
@@ -59,6 +60,7 @@ cp .env.example .env
 - `DATABASE_URL` — async URL для приложения, например `postgresql+asyncpg://charm:charm@localhost:5433/charm`.
 - `JWT_SECRET` — секрет для подписи JWT.
 - `JWT_TTL_MINUTES` — время жизни access token.
+- `BACKEND_CORS_ORIGINS` — список frontend origin через запятую, например `http://localhost:5173,http://127.0.0.1:5173`.
 - `POSTGRES_DB`, `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_PORT` — настройки локального контейнера PostgreSQL.
 
 Запустить PostgreSQL:
@@ -165,6 +167,7 @@ ENV_FILE=.env.test uv run pytest
 - charm discovery и реакции;
 - matches и пагинация;
 - admin profile search и admin-действия.
+- CORS preflight для разрешенного frontend origin.
 
 ## Проверки Кода
 
