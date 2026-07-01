@@ -1,6 +1,6 @@
 from datetime import date, datetime
 
-from pydantic import BaseModel, Field, field_validator, EmailStr
+from pydantic import BaseModel, EmailStr, Field, field_validator
 
 from app.models.profile import Gender, Role, Status
 

@@ -88,6 +88,7 @@ cp .env.example .env
 - `API_PORT` — порт API на хосте, например `8000`.
 - `DATABASE_URL` — async URL для приложения внутри compose-сети, например `postgresql+asyncpg://charm_user:charm_password@postgres:5432/charm`.
 - `JWT_SECRET` — секрет для подписи JWT.
+- `JWT_ALGORITHM` — алгоритм подписи JWT, по умолчанию `HS256`.
 - `JWT_TTL_MINUTES` — время жизни access token.
 - `BACKEND_CORS_ORIGINS` — список frontend origin через запятую, например `http://localhost:5173,http://127.0.0.1:5173`.
 - `POSTGRES_DB`, `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_PORT` — настройки локального контейнера PostgreSQL.
@@ -230,7 +231,7 @@ ENV_FILE=.env.test uv run pytest
 
 CI в GitHub Actions запускает:
 
-- установку зависимостей через `uv sync --extra dev --locked`;
+- установку зависимостей через `uv sync --group dev --locked`;
 - применение Alembic-миграций к PostgreSQL service;
 - `ruff format --check`;
 - `ruff check`;

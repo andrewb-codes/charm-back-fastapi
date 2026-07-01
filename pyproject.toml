@@ -1,7 +1,9 @@
 [project]
 name = "charm-back-fastapi"
 version = "0.1.0"
-requires-python = ">=3.12"
+description = "FastAPI backend for Charm."
+readme = "README.md"
+requires-python = ">=3.12,<3.14"
 dependencies = [
   "fastapi>=0.115",
   "uvicorn[standard]>=0.30",
@@ -15,7 +17,7 @@ dependencies = [
   "email-validator>=2.2"
 ]
 
-[project.optional-dependencies]
+[dependency-groups]
 dev = [
   "pytest>=8.2",
   "pytest-asyncio>=0.23",
@@ -38,3 +40,29 @@ asyncio_mode = "auto"
 asyncio_default_fixture_loop_scope = "session"
 asyncio_default_test_loop_scope = "session"
 testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+src = ["app", "tests", "alembic"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM"]
+ignore = ["E501"]
+
+[tool.ruff.lint.per-file-ignores]
+"app/api/**/*.py" = ["B008"]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+line-ending = "auto"
+
+[tool.mypy]
+python_version = "3.12"
+files = ["app"]
+ignore_missing_imports = true
+check_untyped_defs = true
+warn_unused_configs = true
+warn_return_any = true
+no_implicit_optional = true

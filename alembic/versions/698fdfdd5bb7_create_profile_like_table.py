@@ -6,17 +6,16 @@ Create Date: 2026-06-20 23:44:01.728243
 
 """
 
-from typing import Sequence, Union
+from collections.abc import Sequence
 
-from alembic import op
 import sqlalchemy as sa
-
+from alembic import op
 
 # revision identifiers, used by Alembic.
 revision: str = "698fdfdd5bb7"
-down_revision: Union[str, Sequence[str], None] = "9bef997f9dfc"
-branch_labels: Union[str, Sequence[str], None] = None
-depends_on: Union[str, Sequence[str], None] = None
+down_revision: str | Sequence[str] | None = "9bef997f9dfc"
+branch_labels: str | Sequence[str] | None = None
+depends_on: str | Sequence[str] | None = None
 
 
 def upgrade() -> None:
@@ -28,23 +27,15 @@ def upgrade() -> None:
         sa.Column("b_profile", sa.BigInteger(), nullable=False),
         sa.Column("liked_a", sa.Boolean(), nullable=True),
         sa.Column("liked_b", sa.Boolean(), nullable=True),
-        sa.Column(
-            "created_at", sa.DateTime(), server_default=sa.text("now()"), nullable=False
-        ),
-        sa.Column(
-            "updated_at", sa.DateTime(), server_default=sa.text("now()"), nullable=False
-        ),
+        sa.Column("created_at", sa.DateTime(), server_default=sa.text("now()"), nullable=False),
+        sa.Column("updated_at", sa.DateTime(), server_default=sa.text("now()"), nullable=False),
         sa.CheckConstraint("a_profile < b_profile", name="profile_like_order_check"),
         sa.ForeignKeyConstraint(["a_profile"], ["profile.id"], ondelete="CASCADE"),
         sa.ForeignKeyConstraint(["b_profile"], ["profile.id"], ondelete="CASCADE"),
         sa.PrimaryKeyConstraint("a_profile", "b_profile"),
     )
-    op.create_index(
-        "ix_profile_like_a_profile", "profile_like", ["a_profile"], unique=False
-    )
-    op.create_index(
-        "ix_profile_like_b_profile", "profile_like", ["b_profile"], unique=False
-    )
+    op.create_index("ix_profile_like_a_profile", "profile_like", ["a_profile"], unique=False)
+    op.create_index("ix_profile_like_b_profile", "profile_like", ["b_profile"], unique=False)
     # ### end Alembic commands ###
 
 

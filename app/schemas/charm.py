@@ -5,7 +5,7 @@ from pydantic import BaseModel, Field
 from app.schemas.profile import PublicProfileResponse
 
 
-class CharmAction(str, enum.Enum):
+class CharmAction(enum.StrEnum):
     LIKE = "like"
     DISLIKE = "dislike"
     SKIP = "skip"

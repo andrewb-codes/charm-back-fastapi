@@ -10,6 +10,7 @@ class Settings(BaseSettings):
     database_url: str
 
     jwt_secret: str
+    jwt_algorithm: str = "HS256"
     jwt_ttl_minutes: int = 60
 
     backend_cors_origins: str = ""
@@ -25,11 +26,7 @@ class Settings(BaseSettings):
         if not self.backend_cors_origins:
             return []
 
-        return [
-            origin.strip()
-            for origin in self.backend_cors_origins.split(",")
-            if origin.strip()
-        ]
+        return [origin.strip() for origin in self.backend_cors_origins.split(",") if origin.strip()]
 
 
 settings = Settings()  # type: ignore[call-arg]

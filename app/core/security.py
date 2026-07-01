@@ -1,11 +1,10 @@
 from datetime import UTC, datetime, timedelta
-
-from jose import jwt, JWTError
-from pwdlib import PasswordHash
 from typing import Any
-from app.core.config import settings
 
-JWT_ALGORITHM = "HS256"
+from jose import JWTError, jwt
+from pwdlib import PasswordHash
+
+from app.core.config import settings
 
 password_hash = PasswordHash.recommended()
 
@@ -34,11 +33,11 @@ def create_access_token(*, user_id: int, email: str, role: str) -> str:
         "exp": expires_at,
     }
 
-    return jwt.encode(payload, settings.jwt_secret, algorithm=JWT_ALGORITHM)
+    return jwt.encode(payload, settings.jwt_secret, algorithm=settings.jwt_algorithm)
 
 
 def decode_access_token(token: str) -> dict[str, Any]:
     try:
-        return jwt.decode(token, settings.jwt_secret, algorithms=[JWT_ALGORITHM])
+        return jwt.decode(token, settings.jwt_secret, algorithms=[settings.jwt_algorithm])
     except JWTError as exc:
         raise InvalidTokenError from exc

@@ -1,24 +1,24 @@
 import enum
 from datetime import date, datetime
 
-from sqlalchemy import BigInteger, String, Date, Text, Enum, DateTime, func, Integer
+from sqlalchemy import BigInteger, Date, DateTime, Enum, Integer, String, Text, func
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.db.base import Base
 
 
-class Gender(str, enum.Enum):
+class Gender(enum.StrEnum):
     MALE = "MALE"
     FEMALE = "FEMALE"
     OTHER = "OTHER"
 
 
-class Role(str, enum.Enum):
+class Role(enum.StrEnum):
     ADMIN = "ADMIN"
     USER = "USER"
 
 
-class Status(str, enum.Enum):
+class Status(enum.StrEnum):
     ACTIVE = "ACTIVE"
     INACTIVE = "INACTIVE"
 
@@ -54,6 +54,4 @@ class Profile(Base):
     created_at: Mapped[datetime] = mapped_column(
         DateTime, nullable=False, server_default=func.now()
     )
-    version: Mapped[int] = mapped_column(
-        Integer, nullable=False, default=0, server_default="0"
-    )
+    version: Mapped[int] = mapped_column(Integer, nullable=False, default=0, server_default="0")

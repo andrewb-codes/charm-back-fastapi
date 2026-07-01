@@ -4,10 +4,10 @@ from app.api.deps import get_profile_service, require_admin
 from app.api.presenters.profile import build_profile_response
 from app.models import Profile, Role, Status
 from app.schemas.profile import (
-    AdminProfilesPageResponse,
-    ProfileResponse,
-    AdminProfileStatusUpdateRequest,
     AdminProfileRoleUpdateRequest,
+    AdminProfilesPageResponse,
+    AdminProfileStatusUpdateRequest,
+    ProfileResponse,
 )
 from app.services.profiles import ProfileService
 

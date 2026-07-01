@@ -4,10 +4,10 @@ from app.api.deps import get_current_profile, get_profile_service
 from app.api.presenters.profile import build_profile_response
 from app.models.profile import Profile
 from app.schemas.profile import (
-    ProfileResponse,
-    ProfileUpdateRequest,
     EmailChangeRequest,
     PasswordChangeRequest,
+    ProfileResponse,
+    ProfileUpdateRequest,
 )
 from app.services.profiles import ProfileService
 

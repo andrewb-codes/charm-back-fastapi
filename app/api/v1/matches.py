@@ -1,8 +1,7 @@
-from fastapi import APIRouter, Query, Depends
+from fastapi import APIRouter, Depends, Query
 
 from app.api.deps import get_current_profile, get_profile_service
 from app.api.presenters.profile import build_public_profile_response
-
 from app.models import Profile
 from app.schemas.profile import MatchesResponse
 from app.services.profiles import ProfileService

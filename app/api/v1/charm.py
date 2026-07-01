@@ -1,9 +1,10 @@
-from app.api.deps import get_current_profile, get_charm_service
+from fastapi import APIRouter, Depends, status
+
+from app.api.deps import get_charm_service, get_current_profile
 from app.api.presenters.profile import build_public_profile_response
 from app.models import Profile
 from app.schemas.charm import CharmRequest, NextCharmResponse
 from app.services.charm import CharmService
-from fastapi import APIRouter, Depends, status
 
 router = APIRouter(prefix="/api/v1/charm", tags=["Charm"])
 

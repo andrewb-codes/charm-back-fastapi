@@ -1,6 +1,9 @@
-from app.models import ProfileLike, Profile, Role, Status
-from sqlalchemy import and_, func, or_, select, case
+from typing import cast
+
+from sqlalchemy import and_, case, func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.models import Profile, ProfileLike, Role, Status
 
 
 class ProfileRepository:
@@ -20,7 +23,7 @@ class ProfileRepository:
 
     async def get_by_email(self, email: str) -> Profile | None:
         query = select(Profile).where(Profile.email == email)
-        return await self.session.scalar(query)
+        return cast(Profile | None, await self.session.scalar(query))
 
     async def get_by_id(self, profile_id: int) -> Profile | None:
         return await self.session.get(Profile, profile_id)
@@ -51,15 +54,11 @@ class ProfileRepository:
         )
 
         if profile.gender is not None:
-            query = query.where(
-                Profile.gender.is_not(None), Profile.gender != profile.gender
-            )
+            query = query.where(Profile.gender.is_not(None), Profile.gender != profile.gender)
 
-        return await self.session.scalar(query)
+        return cast(Profile | None, await self.session.scalar(query))
 
-    async def get_matches(
-        self, profile_id: int, limit: int, offset: int
-    ) -> list[Profile]:
+    async def get_matches(self, profile_id: int, limit: int, offset: int) -> list[Profile]:
         matched_profile_id = case(
             (ProfileLike.a_profile == profile_id, ProfileLike.b_profile),
             (ProfileLike.b_profile == profile_id, ProfileLike.a_profile),
@@ -69,10 +68,7 @@ class ProfileRepository:
             select(Profile)
             .select_from(ProfileLike)
             .join(Profile, Profile.id == matched_profile_id)
-            .where(
-                (ProfileLike.a_profile == profile_id)
-                | (ProfileLike.b_profile == profile_id)
-            )
+            .where((ProfileLike.a_profile == profile_id) | (ProfileLike.b_profile == profile_id))
             .where(ProfileLike.liked_a.is_(True), ProfileLike.liked_b.is_(True))
             .order_by(ProfileLike.updated_at.desc())
             .limit(limit)

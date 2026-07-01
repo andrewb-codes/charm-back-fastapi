@@ -1,7 +1,6 @@
+from app.db.session import AsyncSessionLocal
 from httpx import AsyncClient
 from sqlalchemy import text
-
-from app.db.session import AsyncSessionLocal
 
 
 async def register_and_login(
@@ -20,9 +19,7 @@ async def register_and_login(
     return str(response.json()["access_token"])
 
 
-async def activate_profile(
-    profile_id: int, name: str, surname: str, gender: str
-) -> None:
+async def activate_profile(profile_id: int, name: str, surname: str, gender: str) -> None:
     async with AsyncSessionLocal() as session:
         await session.execute(
             text(

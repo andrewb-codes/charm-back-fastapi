@@ -2,29 +2,23 @@ services:
   api:
     build:
       context: .
-    container_name: charm-api-fastapi
     environment:
-      APP_NAME: ${APP_NAME}
-      DEBUG: ${DEBUG}
-      DATABASE_URL: ${DATABASE_URL}
-      JWT_SECRET: ${JWT_SECRET}
-      JWT_TTL_MINUTES: ${JWT_TTL_MINUTES}
-      BACKEND_CORS_ORIGINS: ${BACKEND_CORS_ORIGINS}
+      DATABASE_URL: "${DATABASE_URL:?DATABASE_URL is required}"
+      JWT_SECRET: "${JWT_SECRET:?JWT_SECRET is required}"
     ports:
-      - "${API_PORT}:8000"
+      - "${API_PORT:-8000}:8000"
     depends_on:
       postgres:
         condition: service_healthy
 
   postgres:
     image: postgres:17
-    container_name: charm-postgres-fastapi
     environment:
-      POSTGRES_DB: ${POSTGRES_DB}
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: "${POSTGRES_DB:-charm}"
+      POSTGRES_USER: "${POSTGRES_USER:-charm_user}"
+      POSTGRES_PASSWORD: "${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}"
     ports:
-      - "${POSTGRES_PORT}:5432"
+      - "${POSTGRES_PORT:-5434}:5432"
     volumes:
       - charm_postgres_data:/var/lib/postgresql/data
     healthcheck:

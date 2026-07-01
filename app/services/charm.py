@@ -1,10 +1,10 @@
-from app.core.exceptions import SelfLikeError
-from app.repositories.profile_likes import ProfileLikeRepository
-from app.schemas.charm import CharmAction
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.exceptions import SelfLikeError
 from app.models.profile import Profile
+from app.repositories.profile_likes import ProfileLikeRepository
 from app.repositories.profiles import ProfileRepository
+from app.schemas.charm import CharmAction
 
 
 class CharmService:
@@ -13,9 +13,7 @@ class CharmService:
         self.profile_repository = ProfileRepository(session)
         self.profile_like_repository = ProfileLikeRepository(session)
 
-    async def react(
-        self, *, from_profile_id: int, to_profile_id: int, action: CharmAction
-    ) -> None:
+    async def react(self, *, from_profile_id: int, to_profile_id: int, action: CharmAction) -> None:
         if from_profile_id == to_profile_id:
             raise SelfLikeError()
 

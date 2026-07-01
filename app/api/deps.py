@@ -2,7 +2,7 @@ from fastapi import Depends
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.exceptions import UnauthorizedError, ForbiddenError
+from app.core.exceptions import ForbiddenError, UnauthorizedError
 from app.core.security import InvalidTokenError, decode_access_token
 from app.db.session import get_db_session
 from app.models.profile import Profile, Role

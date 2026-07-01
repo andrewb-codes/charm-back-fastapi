@@ -1,6 +1,16 @@
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.exceptions import (
+    AdminSelfModificationError,
+    DuplicateEmailError,
+    InvalidCredentialsError,
+    InvalidCurrentPasswordError,
+    ProfileNotFoundError,
+    ProfileVersionConflictError,
+    SameEmailError,
+    SamePasswordError,
+)
 from app.core.security import hash_password, verify_password
 from app.models.profile import Profile, Role, Status
 from app.repositories.profiles import ProfileRepository
@@ -8,18 +18,8 @@ from app.schemas.profile import (
     AdminProfileRoleUpdateRequest,
     AdminProfileStatusUpdateRequest,
     EmailChangeRequest,
-    ProfileUpdateRequest,
     PasswordChangeRequest,
-)
-from app.core.exceptions import (
-    DuplicateEmailError,
-    InvalidCredentialsError,
-    InvalidCurrentPasswordError,
-    ProfileVersionConflictError,
-    SameEmailError,
-    SamePasswordError,
-    AdminSelfModificationError,
-    ProfileNotFoundError,
+    ProfileUpdateRequest,
 )
 
 
@@ -59,9 +59,7 @@ class ProfileService:
 
         return profile
 
-    async def update_profile(
-        self, *, profile: Profile, request: ProfileUpdateRequest
-    ) -> Profile:
+    async def update_profile(self, *, profile: Profile, request: ProfileUpdateRequest) -> Profile:
         update_data = request.model_dump(exclude_unset=True)
         version = update_data.pop("version")
 
@@ -78,9 +76,7 @@ class ProfileService:
 
         return profile
 
-    async def change_email(
-        self, *, profile: Profile, request: EmailChangeRequest
-    ) -> Profile:
+    async def change_email(self, *, profile: Profile, request: EmailChangeRequest) -> Profile:
         if profile.version != request.version:
             raise ProfileVersionConflictError()
 
@@ -107,9 +103,7 @@ class ProfileService:
 
         return profile
 
-    async def change_password(
-        self, *, profile: Profile, request: PasswordChangeRequest
-    ) -> Profile:
+    async def change_password(self, *, profile: Profile, request: PasswordChangeRequest) -> Profile:
         if profile.version != request.version:
             raise ProfileVersionConflictError()
 
