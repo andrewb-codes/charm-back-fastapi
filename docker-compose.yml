@@ -1,16 +1,4 @@
 services:
-  api:
-    build:
-      context: .
-    environment:
-      DATABASE_URL: "${DATABASE_URL:?DATABASE_URL is required}"
-      JWT_SECRET: "${JWT_SECRET:?JWT_SECRET is required}"
-    ports:
-      - "${API_PORT:-8000}:8000"
-    depends_on:
-      postgres:
-        condition: service_healthy
-
   postgres:
     image: postgres:17
     environment:
@@ -23,6 +11,43 @@ services:
       - charm_postgres_data:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  api:
+    build:
+      context: .
+    environment:
+      DATABASE_URL: "${DATABASE_URL:?DATABASE_URL is required}"
+      JWT_SECRET: "${JWT_SECRET:?JWT_SECRET is required}"
+    ports:
+      - "${API_PORT:-8000}:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: [ "CMD-SHELL", "python -c \"import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=2)\"" ]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  frontend:
+    build:
+      context: .
+    command: >
+      streamlit run frontend/main.py
+      --server.address 0.0.0.0
+      --server.port 8501
+    environment:
+      STREAMLIT_API_URL: "http://api:8000"
+    ports:
+      - "${STREAMLIT_PORT:-8501}:8501"
+    depends_on:
+      api:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import urllib.request; urllib.request.urlopen('http://127.0.0.1:8501/_stcore/health', timeout=2)\""]
       interval: 5s
       timeout: 3s
       retries: 10
