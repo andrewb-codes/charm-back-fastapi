@@ -1,0 +1,2 @@
+[charm]
+charm-vps ansible_host=YOUR_SERVER_IP ansible_user=root

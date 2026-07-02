@@ -48,3 +48,8 @@ htmlcov/
 
 # Docker override files with local-only settings
 docker-compose.override.yml
+
+# Local Ansible deployment secrets
+deploy/ansible/inventory.ini
+deploy/ansible/group_vars/*.vault.yml
+!deploy/ansible/group_vars/*.vault.yml.example

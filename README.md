@@ -7,6 +7,7 @@ REST API для приложения Charm на FastAPI.
 - Python 3.12+
 - FastAPI
 - Uvicorn
+- Streamlit для простого frontend-интерфейса
 - SQLAlchemy 2.0 async
 - PostgreSQL
 - asyncpg для приложения
@@ -16,7 +17,7 @@ REST API для приложения Charm на FastAPI.
 - pwdlib Argon2 для хеширования паролей
 - python-jose для JWT
 - email-validator
-- Docker и Docker Compose для локального запуска API/PostgreSQL
+- Docker и Docker Compose для локального запуска API/frontend/PostgreSQL
 - uv для окружения, зависимостей и запуска команд
 - pytest, pytest-asyncio, HTTPX для API-тестов
 - Ruff и mypy для статических проверок
@@ -75,7 +76,7 @@ PATCH /api/v1/admin/profiles/{profile_id}/status
 PATCH /api/v1/admin/profiles/{profile_id}/role
 ```
 
-## Локальный запуск В Docker Compose
+## Локальный запуск в Docker Compose
 
 Создать локальный файл окружения:
 
@@ -86,6 +87,7 @@ cp .env.example .env
 Основные переменные окружения:
 
 - `API_PORT` — порт API на хосте, например `8000`.
+- `STREAMLIT_PORT` — порт Streamlit frontend на хосте, например `8501`.
 - `DATABASE_URL` — async URL для приложения внутри compose-сети, например `postgresql+asyncpg://charm_user:charm_password@postgres:5432/charm`.
 - `JWT_SECRET` — секрет для подписи JWT.
 - `JWT_ALGORITHM` — алгоритм подписи JWT, по умолчанию `HS256`.
@@ -93,23 +95,27 @@ cp .env.example .env
 - `BACKEND_CORS_ORIGINS` — список frontend origin через запятую, например `http://localhost:5173,http://127.0.0.1:5173`.
 - `POSTGRES_DB`, `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_PORT` — настройки локального контейнера PostgreSQL.
 
-Собрать образ и запустить PostgreSQL:
+Локальный `docker-compose.yml` публикует и API, и Streamlit на `localhost`,
+чтобы было удобно пользоваться Swagger UI и проверять frontend. Production
+compose для VPS устроен иначе: наружу через Caddy предполагается публиковать
+только Streamlit, а API остается во внутренней Docker-сети.
+
+Первый запуск или запуск после изменения миграций:
 
 ```bash
 docker compose up --build -d postgres
-```
-
-Применить миграции:
-
-```bash
 docker compose run --rm api uv run alembic upgrade head
+docker compose up -d api frontend
 ```
 
-Запустить API:
+После того как миграции уже применены, можно поднимать все сервисы одной командой:
 
 ```bash
-docker compose up -d api
+docker compose up --build -d
 ```
+
+`docker compose up` не применяет миграции автоматически. Миграции выполняются
+отдельной командой, чтобы запуск контейнера не менял схему БД неявно.
 
 Проверка health endpoint:
 
@@ -121,6 +127,12 @@ Swagger UI:
 
 ```text
 http://127.0.0.1:8000/docs
+```
+
+Streamlit frontend:
+
+```text
+http://127.0.0.1:8501
 ```
 
 Остановить контейнеры:
@@ -145,6 +157,7 @@ app/models/           SQLAlchemy ORM-модели
 app/repositories/     SQL-запросы и работа с БД
 app/schemas/          Pydantic request/response-схемы
 app/services/         бизнес-логика
+frontend/             Streamlit-интерфейс для auth, profile, discovery, matches и admin
 alembic/              миграции БД
 tests/                интеграционные API-тесты
 ```
@@ -237,6 +250,15 @@ CI в GitHub Actions запускает:
 - `ruff check`;
 - `mypy app`;
 - `pytest`.
+
+## Деплой
+
+Ansible-сценарий для деплоя на VPS лежит в [deploy/ansible](deploy/ansible/README.md).
+Он устанавливает Docker, генерирует production `.env` и compose-файл, запускает
+PostgreSQL, применяет Alembic-миграции и поднимает API/Streamlit. В production
+публичным через Caddy предполагается только Streamlit; API остается во внутренней
+Docker-сети и вызывается frontend-ом. Подробные команды запуска, Vault и схема
+Caddy описаны в deploy README.
 
 ## Заметки
 

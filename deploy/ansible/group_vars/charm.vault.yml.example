@@ -1,0 +1,2 @@
+postgres_password: replace-with-a-long-random-password
+jwt_secret: replace-with-a-long-random-secret
