@@ -1,4 +1,7 @@
+import pytest
+from app.schemas.profile import ProfileUpdateRequest
 from httpx import AsyncClient
+from pydantic import ValidationError
 
 from tests.helpers import register_and_login
 
@@ -85,6 +88,14 @@ async def test_update_profile_updates_fields(client: AsyncClient) -> None:
     assert body["status"] == "INACTIVE"
     assert body["version"] == 1
     assert isinstance(body["created_at"], str)
+
+
+@pytest.mark.parametrize("field_name", ["name", "surname", "about"])
+def test_profile_update_rejects_blank_text_fields(field_name: str) -> None:
+    payload = {"version": 0, field_name: "   "}
+
+    with pytest.raises(ValidationError):
+        ProfileUpdateRequest(**payload)
 
 
 async def test_update_profile_with_wrong_version_returns_409(

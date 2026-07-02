@@ -33,10 +33,10 @@ class PublicProfileResponse(BaseModel):
 
 
 class ProfileUpdateRequest(BaseModel):
-    name: str | None = Field(default=None, max_length=100)
-    surname: str | None = Field(default=None, max_length=100)
+    name: str | None = Field(default=None, max_length=100, pattern=r"\S")
+    surname: str | None = Field(default=None, max_length=100, pattern=r"\S")
     birthdate: date | None = None
-    about: str | None = Field(default=None, max_length=1000)
+    about: str | None = Field(default=None, max_length=1000, pattern=r"\S")
     gender: Gender | None = None
     version: int
 
