@@ -14,7 +14,6 @@
         name:
           - ca-certificates
           - curl
-          - git
           - gnupg
         state: present
         update_cache: true
@@ -80,13 +79,6 @@
         state: directory
         mode: "0755"
 
-    - name: Checkout application repository
-      ansible.builtin.git:
-        repo: "{{ repo_url }}"
-        dest: "{{ app_dir }}"
-        version: "{{ repo_version }}"
-        force: true
-
     - name: Render production environment file
       ansible.builtin.template:
         src: env.j2
@@ -99,9 +91,9 @@
         dest: "{{ app_dir }}/docker-compose.prod.yml"
         mode: "0644"
 
-    - name: Build application images
+    - name: Pull application images
       ansible.builtin.command:
-        cmd: docker compose -f docker-compose.prod.yml build
+        cmd: docker compose -f docker-compose.prod.yml pull
         chdir: "{{ app_dir }}"
       changed_when: true
 

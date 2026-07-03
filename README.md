@@ -254,11 +254,17 @@ CI в GitHub Actions запускает:
 ## Деплой
 
 Ansible-сценарий для деплоя на VPS лежит в [deploy/ansible](deploy/ansible/README.md).
-Он устанавливает Docker, генерирует production `.env` и compose-файл, запускает
-PostgreSQL, применяет Alembic-миграции и поднимает API/Streamlit. В production
-публичным через Caddy предполагается только Streamlit; API остается во внутренней
-Docker-сети и вызывается frontend-ом. Подробные команды запуска, Vault и схема
-Caddy описаны в deploy README.
+Он устанавливает Docker, подтягивает готовый Docker image из registry,
+генерирует production `.env` и compose-файл, запускает PostgreSQL, применяет
+Alembic-миграции и поднимает API/Streamlit. В production публичным через Caddy
+предполагается только Streamlit; API остается во внутренней Docker-сети и
+вызывается frontend-ом. Подробные команды публикации image, запуска, Vault и
+схема Caddy описаны в deploy README.
+
+GitHub Actions после успешных проверок на push в `main` собирает Docker image,
+публикует его в GHCR и запускает Ansible-деплой на VPS. Для этого в GitHub
+Variables должны быть заданы `VPS_HOST` и `VPS_USER`, а в GitHub Secrets —
+`VPS_SSH_KEY`, `POSTGRES_PASSWORD` и `JWT_SECRET`.
 
 ## Заметки
 

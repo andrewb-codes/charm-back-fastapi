@@ -17,8 +17,7 @@ services:
     restart: unless-stopped
 
   api:
-    build:
-      context: .
+    image: "{{ app_image_ref }}"
     environment:
       DATABASE_URL: "${DATABASE_URL:?DATABASE_URL is required}"
       JWT_SECRET: "${JWT_SECRET:?JWT_SECRET is required}"
@@ -40,8 +39,7 @@ services:
     restart: unless-stopped
 
   frontend:
-    build:
-      context: .
+    image: "{{ app_image_ref }}"
     command: >
       streamlit run frontend/main.py
       --server.address 0.0.0.0

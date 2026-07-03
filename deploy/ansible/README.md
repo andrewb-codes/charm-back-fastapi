@@ -1,6 +1,8 @@
 # Деплой через Ansible
 
 Этот сценарий деплоит Charm на один Ubuntu/Debian VPS через Docker Compose.
+Сервер не билдит приложение из исходников: playbook подтягивает готовый Docker
+image из registry.
 
 Production compose подключает Streamlit к общей Docker-сети `web`. Caddy можно
 держать отдельным compose-проектом и проксировать публичные запросы к alias-у
@@ -19,7 +21,68 @@ Streamlit по адресу `http://api:8000`.
 - `playbook.yml` — устанавливает Docker, создает общую Docker-сеть `web`,
   деплоит приложение и запускает Alembic миграции.
 
-## Первый запуск
+## Docker image
+
+Production compose использует image из `group_vars/charm.yml`:
+
+```yaml
+app_image: ghcr.io/andrewb-codes/charm-back-fastapi
+app_image_tag: main
+```
+
+Перед запуском Ansible этот image уже должен быть собран и опубликован в
+registry. Например, из корня репозитория для обычного amd64 VPS:
+
+```bash
+docker login ghcr.io
+docker buildx build --platform linux/amd64 \
+  -t ghcr.io/andrewb-codes/charm-back-fastapi:main \
+  --push .
+```
+
+GHCR package должен быть публичным, чтобы VPS мог делать `docker pull` без
+`docker login`.
+
+При автоматическом деплое GitHub Actions сам собирает image, пушит его в GHCR
+с тегами `main` и commit SHA, а затем запускает этот playbook с тегом текущего
+коммита.
+
+После первого успешного push image сделай package публичным в GitHub:
+
+```text
+GitHub profile или organization
+→ Packages
+→ charm-back-fastapi
+→ Package settings
+→ Change visibility
+→ Public
+```
+
+## Автоматический деплой из GitHub Actions
+
+Workflow `.github/workflows/ci.yml` запускает деплой после успешных проверок
+только при push в `main`.
+
+Нужно добавить GitHub Variables:
+
+```text
+VPS_HOST
+VPS_USER
+```
+
+И GitHub Secrets:
+
+```text
+VPS_SSH_KEY
+POSTGRES_PASSWORD
+JWT_SECRET
+```
+
+`VPS_SSH_KEY` — приватный SSH-ключ, которым GitHub Actions подключается к VPS.
+Публичная часть ключа должна быть добавлена на сервер в
+`~/.ssh/authorized_keys` для пользователя `VPS_USER`.
+
+## Ручной запуск без GitHub Actions
 
 ```bash
 cd deploy/ansible
@@ -51,9 +114,6 @@ ansible-vault view group_vars/charm.vault.yml --vault-password-file ~/.ansible/c
 ansible-playbook playbook.yml --vault-password-file ~/.ansible/charm-vault-pass
 ```
 
-Файл с паролем Vault нельзя коммитить. В git можно хранить только
-зашифрованный `group_vars/charm.vault.yml`.
-
 ## Полезные команды на VPS
 
 ```bash
@@ -61,6 +121,7 @@ cd /opt/apps/charm
 docker compose -f docker-compose.prod.yml ps
 docker compose -f docker-compose.prod.yml logs -f api
 docker compose -f docker-compose.prod.yml logs -f frontend
+docker compose -f docker-compose.prod.yml pull
 docker compose -f docker-compose.prod.yml run --rm api uv run alembic current
 ```
 

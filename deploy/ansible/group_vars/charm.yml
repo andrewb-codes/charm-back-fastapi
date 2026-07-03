@@ -1,10 +1,8 @@
-app_name: charm
 app_dir: /opt/apps/charm
-repo_url: https://github.com/andrewb-codes/charm-back-fastapi.git
-repo_version: main
+app_image: ghcr.io/andrewb-codes/charm-back-fastapi
+app_image_tag: main
+app_image_ref: "{{ app_image }}:{{ app_image_tag }}"
 
-api_port: 8000
-streamlit_port: 8501
 docker_public_network: web
 frontend_network_alias: charm-frontend
 
@@ -17,8 +15,6 @@ app_env:
   JWT_ALGORITHM: HS256
   JWT_TTL_MINUTES: "60"
   STREAMLIT_API_URL: http://api:8000
-  API_PORT: "{{ api_port }}"
-  STREAMLIT_PORT: "{{ streamlit_port }}"
   POSTGRES_DB: charm
   POSTGRES_USER: charm_user
   POSTGRES_PASSWORD: "{{ postgres_password }}"
