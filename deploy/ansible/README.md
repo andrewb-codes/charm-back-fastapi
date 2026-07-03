@@ -13,9 +13,10 @@ Streamlit по адресу `http://api:8000`.
 
 - `inventory.ini.example` — пример inventory; скопировать в `inventory.ini` и
   указать адрес VPS.
-- `group_vars/charm.yml` — несекретные настройки деплоя.
-- `group_vars/charm.vault.yml.example` — пример секретов; скопировать в
-  `group_vars/charm.vault.yml` и зашифровать через Ansible Vault.
+- `group_vars/portfolio/main.yml` — несекретные настройки деплоя для общего
+  portfolio VPS.
+- `group_vars/portfolio/vault.yml.example` — пример секретов; скопировать в
+  `group_vars/portfolio/vault.yml` и зашифровать через Ansible Vault.
 - `templates/env.j2` — шаблон production `.env`.
 - `templates/docker-compose.prod.yml.j2` — шаблон production compose-файла.
 - `playbook.yml` — устанавливает Docker, создает общую Docker-сеть `web`,
@@ -23,40 +24,16 @@ Streamlit по адресу `http://api:8000`.
 
 ## Docker image
 
-Production compose использует image из `group_vars/charm.yml`:
+Production compose использует image из `group_vars/portfolio/main.yml`:
 
 ```yaml
 app_image: ghcr.io/andrewb-codes/charm-back-fastapi
 app_image_tag: main
 ```
 
-Перед запуском Ansible этот image уже должен быть собран и опубликован в
-registry. Например, из корня репозитория для обычного amd64 VPS:
-
-```bash
-docker login ghcr.io
-docker buildx build --platform linux/amd64 \
-  -t ghcr.io/andrewb-codes/charm-back-fastapi:main \
-  --push .
-```
-
-GHCR package должен быть публичным, чтобы VPS мог делать `docker pull` без
-`docker login`.
-
-При автоматическом деплое GitHub Actions сам собирает image, пушит его в GHCR
-с тегами `main` и commit SHA, а затем запускает этот playbook с тегом текущего
-коммита.
-
-После первого успешного push image сделай package публичным в GitHub:
-
-```text
-GitHub profile или organization
-→ Packages
-→ charm-back-fastapi
-→ Package settings
-→ Change visibility
-→ Public
-```
+При автоматическом деплое GitHub Actions сам собирает image, публикует его в
+GHCR с тегами `main` и commit SHA, а затем запускает этот playbook с тегом
+текущего коммита. VPS получает готовый image через `docker compose pull`.
 
 ## Автоматический деплой из GitHub Actions
 
@@ -84,11 +61,14 @@ JWT_SECRET
 
 ## Ручной запуск без GitHub Actions
 
+Перед ручным запуском Ansible нужный image уже должен быть опубликован в GHCR.
+Обычно это делает GitHub Actions после push в `main`.
+
 ```bash
 cd deploy/ansible
 cp inventory.ini.example inventory.ini
-cp group_vars/charm.vault.yml.example group_vars/charm.vault.yml
-ansible-vault encrypt group_vars/charm.vault.yml
+cp group_vars/portfolio/vault.yml.example group_vars/portfolio/vault.yml
+ansible-vault encrypt group_vars/portfolio/vault.yml
 ansible-playbook playbook.yml --ask-vault-pass
 ```
 
@@ -105,7 +85,7 @@ chmod 600 ~/.ansible/charm-vault-pass
 Ansible Vault без кавычек. Проверить расшифровку:
 
 ```bash
-ansible-vault view group_vars/charm.vault.yml --vault-password-file ~/.ansible/charm-vault-pass
+ansible-vault view group_vars/portfolio/vault.yml --vault-password-file ~/.ansible/charm-vault-pass
 ```
 
 Запуск playbook с файлом пароля:

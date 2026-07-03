@@ -258,8 +258,8 @@ Ansible-сценарий для деплоя на VPS лежит в [deploy/ansi
 генерирует production `.env` и compose-файл, запускает PostgreSQL, применяет
 Alembic-миграции и поднимает API/Streamlit. В production публичным через Caddy
 предполагается только Streamlit; API остается во внутренней Docker-сети и
-вызывается frontend-ом. Подробные команды публикации image, запуска, Vault и
-схема Caddy описаны в deploy README.
+вызывается frontend-ом. Подробные команды запуска, Vault и схема Caddy описаны
+в deploy README.
 
 GitHub Actions после успешных проверок на push в `main` собирает Docker image,
 публикует его в GHCR и запускает Ansible-деплой на VPS. Для этого в GitHub

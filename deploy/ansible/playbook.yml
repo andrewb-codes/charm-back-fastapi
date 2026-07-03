@@ -1,5 +1,5 @@
 - name: Deploy Charm
-  hosts: charm
+  hosts: portfolio
   become: true
 
   handlers:

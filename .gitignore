@@ -53,3 +53,5 @@ docker-compose.override.yml
 deploy/ansible/inventory.ini
 deploy/ansible/group_vars/*.vault.yml
 !deploy/ansible/group_vars/*.vault.yml.example
+deploy/ansible/group_vars/**/vault.yml
+!deploy/ansible/group_vars/**/vault.yml.example
