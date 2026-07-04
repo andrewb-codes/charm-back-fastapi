@@ -86,19 +86,20 @@ cp .env.example .env
 
 Основные переменные окружения:
 
-- `API_PORT` — порт API на хосте, например `8000`.
-- `STREAMLIT_PORT` — порт Streamlit frontend на хосте, например `8501`.
 - `DATABASE_URL` — async URL для приложения внутри compose-сети, например `postgresql+asyncpg://charm_user:charm_password@postgres:5432/charm`.
 - `JWT_SECRET` — секрет для подписи JWT.
-- `JWT_ALGORITHM` — алгоритм подписи JWT, по умолчанию `HS256`.
-- `JWT_TTL_MINUTES` — время жизни access token.
-- `BACKEND_CORS_ORIGINS` — список frontend origin через запятую, например `http://localhost:5173,http://127.0.0.1:5173`.
+- `STREAMLIT_API_URL` — URL API внутри compose-сети, обычно `http://api:8000`.
 - `POSTGRES_DB`, `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_PORT` — настройки локального контейнера PostgreSQL.
+- `API_PORT`, `STREAMLIT_PORT` — порты API и Streamlit frontend на хосте.
 
-Локальный `docker-compose.yml` публикует и API, и Streamlit на `localhost`,
-чтобы было удобно пользоваться Swagger UI и проверять frontend. Production
+Настройки приложения с безопасными дефолтами (`APP_NAME`, `DEBUG`,
+`JWT_ALGORITHM`, `JWT_TTL_MINUTES`, `BACKEND_CORS_ORIGINS`) задаются в коде и
+не передаются в контейнеры через compose.
+
+Локальный `docker-compose.yml` публикует Postgres, API, и Streamlit на `localhost`,
+чтобы было удобно пользоваться Swagger UI и проверять БД и frontend. Production
 compose для VPS устроен иначе: наружу через Caddy предполагается публиковать
-только Streamlit, а API остается во внутренней Docker-сети.
+только Streamlit, а БД и API остаются во внутренней Docker-сети.
 
 Первый запуск или запуск после изменения миграций:
 

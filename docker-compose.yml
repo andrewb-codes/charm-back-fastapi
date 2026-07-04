@@ -2,11 +2,11 @@ services:
   postgres:
     image: postgres:17
     environment:
-      POSTGRES_DB: "${POSTGRES_DB:-charm}"
-      POSTGRES_USER: "${POSTGRES_USER:-charm_user}"
+      POSTGRES_DB: "${POSTGRES_DB:?POSTGRES_DB is required}"
+      POSTGRES_USER: "${POSTGRES_USER:?POSTGRES_USER is required}"
       POSTGRES_PASSWORD: "${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}"
     ports:
-      - "${POSTGRES_PORT:-5434}:5432"
+      - "${POSTGRES_PORT}:5432"
     volumes:
       - charm_postgres_data:/var/lib/postgresql/data
     healthcheck:
@@ -22,7 +22,7 @@ services:
       DATABASE_URL: "${DATABASE_URL:?DATABASE_URL is required}"
       JWT_SECRET: "${JWT_SECRET:?JWT_SECRET is required}"
     ports:
-      - "${API_PORT:-8000}:8000"
+      - "${API_PORT}:8000"
     depends_on:
       postgres:
         condition: service_healthy
@@ -40,9 +40,9 @@ services:
       --server.address 0.0.0.0
       --server.port 8501
     environment:
-      STREAMLIT_API_URL: "http://api:8000"
+      STREAMLIT_API_URL: "${STREAMLIT_API_URL:?STREAMLIT_API_URL is required}"
     ports:
-      - "${STREAMLIT_PORT:-8501}:8501"
+      - "${STREAMLIT_PORT}:8501"
     depends_on:
       api:
         condition: service_healthy

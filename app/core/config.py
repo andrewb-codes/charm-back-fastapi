@@ -6,6 +6,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 class Settings(BaseSettings):
     app_name: str = "Charm API"
     debug: bool = False
+    sql_echo: bool = False
 
     database_url: str
 

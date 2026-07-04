@@ -7,13 +7,8 @@ docker_public_network: web
 frontend_network_alias: charm-frontend
 
 app_env:
-  APP_NAME: Charm API
-  DEBUG: "false"
-  BACKEND_CORS_ORIGINS: ""
   DATABASE_URL: postgresql+asyncpg://charm_user:{{ postgres_password }}@postgres:5432/charm
   JWT_SECRET: "{{ jwt_secret }}"
-  JWT_ALGORITHM: HS256
-  JWT_TTL_MINUTES: "60"
   STREAMLIT_API_URL: http://api:8000
   POSTGRES_DB: charm
   POSTGRES_USER: charm_user
