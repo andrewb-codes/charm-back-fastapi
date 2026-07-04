@@ -48,7 +48,7 @@ jobs:
         uses: astral-sh/setup-uv@v5
 
       - name: Install dependencies
-        run: uv sync --group dev --locked
+        run: uv sync --group dev --extra all --locked
 
       - name: Apply migrations
         run: uv run alembic upgrade head
@@ -60,7 +60,7 @@ jobs:
         run: uv run ruff check .
 
       - name: Run mypy
-        run: uv run mypy app
+        run: uv run mypy app frontend
 
       - name: Run tests
         run: uv run pytest
@@ -74,7 +74,8 @@ jobs:
       cancel-in-progress: false
 
     env:
-      APP_IMAGE: ghcr.io/${{ github.repository }}
+      API_IMAGE: ghcr.io/${{ github.repository }}-api
+      FRONTEND_IMAGE: ghcr.io/${{ github.repository }}-frontend
       APP_IMAGE_TAG: ${{ github.sha }}
 
     steps:
@@ -91,15 +92,27 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build and push Docker image
+      - name: Build and push API image
         uses: docker/build-push-action@v6
         with:
           context: .
+          file: Dockerfile.api
           platforms: linux/amd64
           push: true
           tags: |
-            ${{ env.APP_IMAGE }}:${{ env.APP_IMAGE_TAG }}
-            ${{ env.APP_IMAGE }}:main
+            ${{ env.API_IMAGE }}:${{ env.APP_IMAGE_TAG }}
+            ${{ env.API_IMAGE }}:main
+
+      - name: Build and push frontend image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: Dockerfile.frontend
+          platforms: linux/amd64
+          push: true
+          tags: |
+            ${{ env.FRONTEND_IMAGE }}:${{ env.APP_IMAGE_TAG }}
+            ${{ env.FRONTEND_IMAGE }}:main
 
       - name: Set up SSH
         env:
@@ -131,5 +144,6 @@ jobs:
           ansible-playbook playbook.yml \
             --extra-vars "postgres_password=${POSTGRES_PASSWORD}" \
             --extra-vars "jwt_secret=${JWT_SECRET}" \
-            --extra-vars "app_image=${APP_IMAGE}" \
+            --extra-vars "api_image=${API_IMAGE}" \
+            --extra-vars "frontend_image=${FRONTEND_IMAGE}" \
             --extra-vars "app_image_tag=${APP_IMAGE_TAG}"

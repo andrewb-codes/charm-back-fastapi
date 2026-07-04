@@ -1,8 +1,8 @@
 # Деплой через Ansible
 
 Этот сценарий деплоит Charm на один Ubuntu/Debian VPS через Docker Compose.
-Сервер не билдит приложение из исходников: playbook подтягивает готовый Docker
-image из registry.
+Сервер не билдит приложение из исходников: playbook подтягивает готовые Docker
+images для API и frontend из registry.
 
 Production compose подключает Streamlit к общей Docker-сети `web`. Caddy можно
 держать отдельным compose-проектом и проксировать публичные запросы к alias-у
@@ -22,18 +22,27 @@ Streamlit по адресу `http://api:8000`.
 - `playbook.yml` — устанавливает Docker, создает общую Docker-сеть `web`,
   деплоит приложение и запускает Alembic миграции.
 
-## Docker image
+## Docker images
 
-Production compose использует image из `group_vars/portfolio/main.yml`:
+Production compose использует images из `group_vars/portfolio/main.yml`:
 
 ```yaml
-app_image: ghcr.io/andrewb-codes/charm-back-fastapi
+api_image: ghcr.io/andrewb-codes/charm-back-fastapi-api
+frontend_image: ghcr.io/andrewb-codes/charm-back-fastapi-frontend
 app_image_tag: main
+
+api_image_ref: "{{ api_image }}:{{ app_image_tag }}"
+frontend_image_ref: "{{ frontend_image }}:{{ app_image_tag }}"
 ```
 
-При автоматическом деплое GitHub Actions сам собирает image, публикует его в
-GHCR с тегами `main` и commit SHA, а затем запускает этот playbook с тегом
-текущего коммита. VPS получает готовый image через `docker compose pull`.
+При автоматическом деплое GitHub Actions сам собирает два image:
+
+- `Dockerfile.api` -> `ghcr.io/<owner>/<repo>-api`;
+- `Dockerfile.frontend` -> `ghcr.io/<owner>/<repo>-frontend`.
+
+Оба image публикуются в GHCR с тегами `main` и commit SHA. Затем workflow
+запускает этот playbook с тегом текущего коммита, а VPS получает готовые images
+через `docker compose pull`.
 
 ## Автоматический деплой из GitHub Actions
 
@@ -61,8 +70,8 @@ JWT_SECRET
 
 ## Ручной запуск без GitHub Actions
 
-Перед ручным запуском Ansible нужный image уже должен быть опубликован в GHCR.
-Обычно это делает GitHub Actions после push в `main`.
+Перед ручным запуском Ansible нужные API/frontend images уже должны быть
+опубликованы в GHCR. Обычно это делает GitHub Actions после push в `main`.
 
 ```bash
 cd deploy/ansible
@@ -70,6 +79,16 @@ cp inventory.ini.example inventory.ini
 cp group_vars/portfolio/vault.yml.example group_vars/portfolio/vault.yml
 ansible-vault encrypt group_vars/portfolio/vault.yml
 ansible-playbook playbook.yml --ask-vault-pass
+```
+
+По умолчанию ручной запуск использует image-тег `main` из
+`group_vars/portfolio/main.yml`. Если нужно задеплоить конкретный тег, передайте
+его явно:
+
+```bash
+ansible-playbook playbook.yml \
+  --extra-vars "app_image_tag=<commit-sha-or-tag>" \
+  --ask-vault-pass
 ```
 
 Чтобы не вводить пароль Vault вручную при каждом запуске, можно хранить его
@@ -102,7 +121,8 @@ docker compose -f docker-compose.prod.yml ps
 docker compose -f docker-compose.prod.yml logs -f api
 docker compose -f docker-compose.prod.yml logs -f frontend
 docker compose -f docker-compose.prod.yml pull
-docker compose -f docker-compose.prod.yml run --rm api uv run alembic current
+docker compose -f docker-compose.prod.yml run --rm api alembic current
+docker compose -f docker-compose.prod.yml run --rm api alembic upgrade head
 ```
 
 ## Caddy и общая Docker-сеть

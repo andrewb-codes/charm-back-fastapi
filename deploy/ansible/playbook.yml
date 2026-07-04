@@ -109,7 +109,7 @@
 
     - name: Run Alembic migrations
       ansible.builtin.command:
-        cmd: docker compose -f docker-compose.prod.yml run --rm api uv run alembic upgrade head
+        cmd: docker compose -f docker-compose.prod.yml run --rm api alembic upgrade head
         chdir: "{{ app_dir }}"
       changed_when: true
 

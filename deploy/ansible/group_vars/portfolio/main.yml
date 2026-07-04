@@ -1,7 +1,11 @@
 app_dir: /opt/apps/charm
-app_image: ghcr.io/andrewb-codes/charm-back-fastapi
+
+api_image: ghcr.io/andrewb-codes/charm-back-fastapi-api
+frontend_image: ghcr.io/andrewb-codes/charm-back-fastapi-frontend
 app_image_tag: main
-app_image_ref: "{{ app_image }}:{{ app_image_tag }}"
+
+api_image_ref: "{{ api_image }}:{{ app_image_tag }}"
+frontend_image_ref: "{{ frontend_image }}:{{ app_image_tag }}"
 
 docker_public_network: web
 frontend_network_alias: charm-frontend

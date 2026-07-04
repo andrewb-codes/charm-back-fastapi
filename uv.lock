@@ -225,6 +225,11 @@ name = "charm-back-fastapi"
 version = "0.1.0"
 source = { editable = "." }
 dependencies = [
+    { name = "pydantic-settings" },
+]
+
+[package.optional-dependencies]
+all = [
     { name = "alembic" },
     { name = "asyncpg" },
     { name = "email-validator" },
@@ -232,11 +237,25 @@ dependencies = [
     { name = "httpx" },
     { name = "psycopg", extra = ["binary"] },
     { name = "pwdlib", extra = ["argon2"] },
-    { name = "pydantic-settings" },
     { name = "python-jose", extra = ["cryptography"] },
     { name = "sqlalchemy", extra = ["asyncio"] },
     { name = "streamlit" },
     { name = "uvicorn", extra = ["standard"] },
+]
+api = [
+    { name = "alembic" },
+    { name = "asyncpg" },
+    { name = "email-validator" },
+    { name = "fastapi" },
+    { name = "psycopg", extra = ["binary"] },
+    { name = "pwdlib", extra = ["argon2"] },
+    { name = "python-jose", extra = ["cryptography"] },
+    { name = "sqlalchemy", extra = ["asyncio"] },
+    { name = "uvicorn", extra = ["standard"] },
+]
+frontend = [
+    { name = "httpx" },
+    { name = "streamlit" },
 ]
 
 [package.dev-dependencies]
@@ -250,19 +269,21 @@ dev = [
 
 [package.metadata]
 requires-dist = [
-    { name = "alembic", specifier = ">=1.13" },
-    { name = "asyncpg", specifier = ">=0.29" },
-    { name = "email-validator", specifier = ">=2.2" },
-    { name = "fastapi", specifier = ">=0.115" },
-    { name = "httpx", specifier = ">=0.27" },
-    { name = "psycopg", extras = ["binary"], specifier = ">=3.2" },
-    { name = "pwdlib", extras = ["argon2"], specifier = ">=0.2" },
+    { name = "alembic", marker = "extra == 'api'", specifier = ">=1.13" },
+    { name = "asyncpg", marker = "extra == 'api'", specifier = ">=0.29" },
+    { name = "charm-back-fastapi", extras = ["api", "frontend"], marker = "extra == 'all'" },
+    { name = "email-validator", marker = "extra == 'api'", specifier = ">=2.2" },
+    { name = "fastapi", marker = "extra == 'api'", specifier = ">=0.115" },
+    { name = "httpx", marker = "extra == 'frontend'", specifier = ">=0.27" },
+    { name = "psycopg", extras = ["binary"], marker = "extra == 'api'", specifier = ">=3.2" },
+    { name = "pwdlib", extras = ["argon2"], marker = "extra == 'api'", specifier = ">=0.2" },
     { name = "pydantic-settings", specifier = ">=2.4" },
-    { name = "python-jose", extras = ["cryptography"], specifier = ">=3.3" },
-    { name = "sqlalchemy", extras = ["asyncio"], specifier = ">=2.0" },
-    { name = "streamlit", specifier = ">=1.36" },
-    { name = "uvicorn", extras = ["standard"], specifier = ">=0.30" },
+    { name = "python-jose", extras = ["cryptography"], marker = "extra == 'api'", specifier = ">=3.3" },
+    { name = "sqlalchemy", extras = ["asyncio"], marker = "extra == 'api'", specifier = ">=2.0" },
+    { name = "streamlit", marker = "extra == 'frontend'", specifier = ">=1.36" },
+    { name = "uvicorn", extras = ["standard"], marker = "extra == 'api'", specifier = ">=0.30" },
 ]
+provides-extras = ["api", "frontend", "all"]
 
 [package.metadata.requires-dev]
 dev = [

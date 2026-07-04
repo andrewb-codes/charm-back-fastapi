@@ -18,6 +18,7 @@ REST API для приложения Charm на FastAPI.
 - python-jose для JWT
 - email-validator
 - Docker и Docker Compose для локального запуска API/frontend/PostgreSQL
+- отдельные Docker images для API и frontend
 - uv для окружения, зависимостей и запуска команд
 - pytest, pytest-asyncio, HTTPX для API-тестов
 - Ruff и mypy для статических проверок
@@ -101,11 +102,19 @@ cp .env.example .env
 compose для VPS устроен иначе: наружу через Caddy предполагается публиковать
 только Streamlit, а БД и API остаются во внутренней Docker-сети.
 
+API и frontend собираются разными Dockerfile:
+
+- `Dockerfile.api` — устанавливает зависимости из optional extra `api` и
+  запускает FastAPI/Uvicorn.
+- `Dockerfile.frontend` — устанавливает зависимости из optional extra `frontend`
+  и запускает Streamlit. Команда запуска frontend находится в Dockerfile, а не
+  в compose-файле.
+
 Первый запуск или запуск после изменения миграций:
 
 ```bash
 docker compose up --build -d postgres
-docker compose run --rm api uv run alembic upgrade head
+docker compose run --rm api alembic upgrade head
 docker compose up -d api frontend
 ```
 
@@ -161,6 +170,25 @@ app/services/         бизнес-логика
 frontend/             Streamlit-интерфейс для auth, profile, discovery, matches и admin
 alembic/              миграции БД
 tests/                интеграционные API-тесты
+Dockerfile.api        production/local image для FastAPI
+Dockerfile.frontend   production/local image для Streamlit
+deploy/ansible/       Ansible-деплой на VPS
+```
+
+## Зависимости
+
+Базовые runtime-зависимости минимальные. Зависимости приложения разделены на
+optional extras:
+
+- `api` — FastAPI, Uvicorn, SQLAlchemy, драйверы PostgreSQL, Alembic, JWT и
+  парольные хеши.
+- `frontend` — Streamlit и HTTPX.
+- `all` — API и frontend вместе.
+
+Для локальной разработки обычно нужно установить dev-группу и оба runtime-набора:
+
+```bash
+uv sync --group dev --extra all
 ```
 
 ## Миграции
@@ -237,15 +265,16 @@ ENV_FILE=.env.test uv run pytest
 ## Проверки кода
 
 ```bash
+uv sync --group dev --extra all
 uv run ruff format .
 uv run ruff check .
-uv run mypy app
+uv run mypy app frontend
 ENV_FILE=.env.test uv run pytest
 ```
 
 CI в GitHub Actions запускает:
 
-- установку зависимостей через `uv sync --group dev --locked`;
+- установку зависимостей через `uv sync --group dev --extra all --locked`;
 - применение Alembic-миграций к PostgreSQL service;
 - `ruff format --check`;
 - `ruff check`;
@@ -255,17 +284,17 @@ CI в GitHub Actions запускает:
 ## Деплой
 
 Ansible-сценарий для деплоя на VPS лежит в [deploy/ansible](deploy/ansible/README.md).
-Он устанавливает Docker, подтягивает готовый Docker image из registry,
-генерирует production `.env` и compose-файл, запускает PostgreSQL, применяет
-Alembic-миграции и поднимает API/Streamlit. В production публичным через Caddy
-предполагается только Streamlit; API остается во внутренней Docker-сети и
-вызывается frontend-ом. Подробные команды запуска, Vault и схема Caddy описаны
-в deploy README.
+Он устанавливает Docker, подтягивает готовые API/frontend Docker images из
+registry, генерирует production `.env` и compose-файл, запускает PostgreSQL,
+применяет Alembic-миграции и поднимает API/Streamlit. В production публичным
+через Caddy предполагается только Streamlit; API остается во внутренней
+Docker-сети и вызывается frontend-ом. Подробные команды запуска, Vault и схема
+Caddy описаны в deploy README.
 
-GitHub Actions после успешных проверок на push в `main` собирает Docker image,
-публикует его в GHCR и запускает Ansible-деплой на VPS. Для этого в GitHub
-Variables должны быть заданы `VPS_HOST` и `VPS_USER`, а в GitHub Secrets —
-`VPS_SSH_KEY`, `POSTGRES_PASSWORD` и `JWT_SECRET`.
+GitHub Actions после успешных проверок на push в `main` собирает два Docker
+image, публикует их в GHCR и запускает Ansible-деплой на VPS. Для этого в
+GitHub Variables должны быть заданы `VPS_HOST` и `VPS_USER`, а в GitHub Secrets
+— `VPS_SSH_KEY`, `POSTGRES_PASSWORD` и `JWT_SECRET`.
 
 ## Заметки
 
@@ -275,4 +304,4 @@ Variables должны быть заданы `VPS_HOST` и `VPS_USER`, а в Git
 - `.env.example` и `.env.test.example` коммитятся как шаблоны.
 - `uv.lock` коммитится для воспроизводимой установки зависимостей.
 - Тесты используют `httpx.AsyncClient` с `ASGITransport`, поэтому запускать `uvicorn` для тестов не нужно.
-- Docker image не запускает миграции автоматически; миграции выполняются отдельной командой.
+- Docker images не запускают миграции автоматически; миграции выполняются отдельной командой.

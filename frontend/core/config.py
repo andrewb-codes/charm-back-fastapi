@@ -11,4 +11,4 @@ class FrontendSettings(BaseSettings):
     )
 
 
-frontend_settings = FrontendSettings()
+frontend_settings = FrontendSettings()  # type: ignore[call-arg]
