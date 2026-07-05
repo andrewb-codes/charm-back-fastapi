@@ -13,15 +13,30 @@ __pycache__
 .pytest_cache
 .ruff_cache
 .coverage
+.coverage.*
 htmlcov
 
 .env
 .env.*
 !.env.example
+!.env.test.example
 
 .idea
 .vscode
 .DS_Store
 
+build
+dist
+*.egg-info
+.eggs
+*.egg
+
+*.log
+*.pid
+*.sqlite
+*.sqlite3
+*.db
+
 tests
 docker-compose*.yml
+deploy
