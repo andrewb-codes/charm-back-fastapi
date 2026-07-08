@@ -1,2 +1,4 @@
 postgres_password: replace-with-a-long-random-password
 jwt_secret: replace-with-a-long-random-secret
+demo_password: replace-with-demo-password
+synthetic_users_password: replace-with-synthetic-users-password

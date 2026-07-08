@@ -140,10 +140,14 @@ jobs:
         env:
           POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
           JWT_SECRET: ${{ secrets.JWT_SECRET }}
+          DEMO_PASSWORD: ${{ secrets.DEMO_PASSWORD }}
+          SYNTHETIC_USERS_PASSWORD: ${{ secrets.SYNTHETIC_USERS_PASSWORD }}
         run: |
           ansible-playbook playbook.yml \
             --extra-vars "postgres_password=${POSTGRES_PASSWORD}" \
             --extra-vars "jwt_secret=${JWT_SECRET}" \
+            --extra-vars "demo_password=${DEMO_PASSWORD}" \
+            --extra-vars "synthetic_users_password=${SYNTHETIC_USERS_PASSWORD}" \
             --extra-vars "api_image=${API_IMAGE}" \
             --extra-vars "frontend_image=${FRONTEND_IMAGE}" \
             --extra-vars "app_image_tag=${APP_IMAGE_TAG}"

@@ -17,3 +17,12 @@ app_env:
   POSTGRES_DB: charm
   POSTGRES_USER: charm_user
   POSTGRES_PASSWORD: "{{ postgres_password }}"
+
+  DEMO_USER_ENABLED: "true"
+  DEMO_EMAIL: demo@example.com
+  DEMO_PASSWORD: "{{ demo_password }}"
+
+  SYNTHETIC_USERS_ENABLED: "true"
+  SYNTHETIC_USERS_COUNT: "100"
+  SYNTHETIC_USERS_EMAIL_PREFIX: synthetic
+  SYNTHETIC_USERS_PASSWORD: "{{ synthetic_users_password }}"

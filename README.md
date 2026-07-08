@@ -2,6 +2,21 @@
 
 REST API для приложения Charm на FastAPI.
 
+## Демо
+
+Публичный demo frontend: `https://<demo-domain>`
+
+Demo-аккаунт:
+
+```text
+email: demo@example.com
+password: vgoaV3WqMW9V079
+```
+
+При деплое seed-скрипт создает demo-пользователя и набор synthetic users для
+наполнения discovery/admin сценариев. Часть synthetic users заранее лайкает demo
+профиль, поэтому demo-аккаунт сразу показывает непустое состояние приложения.
+
 ## Стек
 
 - Python 3.12+
@@ -89,6 +104,11 @@ cp .env.example .env
 
 - `DATABASE_URL` — async URL для приложения внутри compose-сети, например `postgresql+asyncpg://charm_user:charm_password@postgres:5432/charm`.
 - `JWT_SECRET` — секрет для подписи JWT.
+- `DEMO_USER_ENABLED`, `DEMO_EMAIL`, `DEMO_PASSWORD` — опциональный demo-аккаунт,
+  который создает seed-скрипт.
+- `SYNTHETIC_USERS_ENABLED`, `SYNTHETIC_USERS_COUNT`,
+  `SYNTHETIC_USERS_EMAIL_PREFIX`, `SYNTHETIC_USERS_PASSWORD` — опциональные
+  синтетические пользователи для наполнения discovery/admin сценариев.
 - `STREAMLIT_API_URL` — URL API внутри compose-сети, обычно `http://api:8000`.
 - `POSTGRES_DB`, `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_PORT` — настройки локального контейнера PostgreSQL.
 - `API_PORT`, `STREAMLIT_PORT` — порты API и Streamlit frontend на хосте.
@@ -115,6 +135,7 @@ API и frontend собираются разными Dockerfile:
 ```bash
 docker compose up --build -d postgres
 docker compose run --rm api alembic upgrade head
+docker compose run --rm api python -m app.scripts.seed_data
 docker compose up -d api frontend
 ```
 
@@ -124,8 +145,10 @@ docker compose up -d api frontend
 docker compose up --build -d
 ```
 
-`docker compose up` не применяет миграции автоматически. Миграции выполняются
-отдельной командой, чтобы запуск контейнера не менял схему БД неявно.
+`docker compose up` не применяет миграции и seed-данные автоматически. Эти шаги
+выполняются отдельными командами, чтобы запуск контейнера не менял схему БД и
+данные неявно. Seed-скрипт idempotent: он проверяет существующие email перед
+созданием demo/synthetic пользователей.
 
 Проверка health endpoint:
 
@@ -286,10 +309,10 @@ CI в GitHub Actions запускает:
 Ansible-сценарий для деплоя на VPS лежит в [deploy/ansible](deploy/ansible/README.md).
 Он устанавливает Docker, подтягивает готовые API/frontend Docker images из
 registry, генерирует production `.env` и compose-файл, запускает PostgreSQL,
-применяет Alembic-миграции и поднимает API/Streamlit. В production публичным
-через Caddy предполагается только Streamlit; API остается во внутренней
-Docker-сети и вызывается frontend-ом. Подробные команды запуска, Vault и схема
-Caddy описаны в deploy README.
+применяет Alembic-миграции, запускает seed-скрипт и поднимает API/Streamlit.
+В production публичным через Caddy предполагается только Streamlit; API
+остается во внутренней Docker-сети и вызывается frontend-ом. Подробные команды
+запуска, Vault и схема Caddy описаны в deploy README.
 
 GitHub Actions после успешных проверок на push в `main` собирает два Docker
 image, публикует их в GHCR и запускает Ansible-деплой на VPS. Для этого в
@@ -304,4 +327,4 @@ GitHub Variables должны быть заданы `VPS_HOST` и `VPS_USER`, а
 - `.env.example` и `.env.test.example` коммитятся как шаблоны.
 - `uv.lock` коммитится для воспроизводимой установки зависимостей.
 - Тесты используют `httpx.AsyncClient` с `ASGITransport`, поэтому запускать `uvicorn` для тестов не нужно.
-- Docker images не запускают миграции автоматически; миграции выполняются отдельной командой.
+- Docker images не запускают миграции и seed-данные автоматически; эти шаги выполняются отдельными командами.

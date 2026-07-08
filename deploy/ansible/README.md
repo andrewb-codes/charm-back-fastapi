@@ -20,7 +20,34 @@ Streamlit по адресу `http://api:8000`.
 - `templates/env.j2` — шаблон production `.env`.
 - `templates/docker-compose.prod.yml.j2` — шаблон production compose-файла.
 - `playbook.yml` — устанавливает Docker, создает общую Docker-сеть `web`,
-  деплоит приложение и запускает Alembic миграции.
+  деплоит приложение, запускает Alembic миграции и seed-скрипт.
+
+## Seed-данные
+
+После миграций playbook запускает:
+
+```bash
+docker compose -f docker-compose.prod.yml run --rm api python -m app.scripts.seed_data
+```
+
+Seed-скрипт создает данные только если соответствующие переменные включены в
+production `.env` через `app_env`:
+
+```yaml
+app_env:
+  DEMO_USER_ENABLED: "true"
+  DEMO_EMAIL: demo@example.com
+  DEMO_PASSWORD: "{{ demo_password }}"
+  SYNTHETIC_USERS_ENABLED: "true"
+  SYNTHETIC_USERS_COUNT: "100"
+  SYNTHETIC_USERS_EMAIL_PREFIX: synthetic
+  SYNTHETIC_USERS_PASSWORD: "{{ synthetic_users_password }}"
+```
+
+`DEMO_PASSWORD` и `SYNTHETIC_USERS_PASSWORD` лучше хранить в
+`group_vars/portfolio/vault.yml` для ручного запуска и в GitHub Secrets для
+автоматического деплоя. Если флаги выключены или переменные не заданы,
+seed-скрипт не создает соответствующие данные.
 
 ## Docker images
 
@@ -62,6 +89,8 @@ VPS_USER
 VPS_SSH_KEY
 POSTGRES_PASSWORD
 JWT_SECRET
+DEMO_PASSWORD
+SYNTHETIC_USERS_PASSWORD
 ```
 
 `VPS_SSH_KEY` — приватный SSH-ключ, которым GitHub Actions подключается к VPS.
@@ -79,6 +108,16 @@ cp inventory.ini.example inventory.ini
 cp group_vars/portfolio/vault.yml.example group_vars/portfolio/vault.yml
 ansible-vault encrypt group_vars/portfolio/vault.yml
 ansible-playbook playbook.yml --ask-vault-pass
+```
+
+Для ручного запуска `group_vars/portfolio/vault.yml` должен содержать секреты,
+которые используются в `group_vars/portfolio/main.yml`:
+
+```yaml
+postgres_password: replace-with-a-long-random-password
+jwt_secret: replace-with-a-long-random-secret
+demo_password: replace-with-demo-password
+synthetic_users_password: replace-with-synthetic-users-password
 ```
 
 По умолчанию ручной запуск использует image-тег `main` из
@@ -123,6 +162,7 @@ docker compose -f docker-compose.prod.yml logs -f frontend
 docker compose -f docker-compose.prod.yml pull
 docker compose -f docker-compose.prod.yml run --rm api alembic current
 docker compose -f docker-compose.prod.yml run --rm api alembic upgrade head
+docker compose -f docker-compose.prod.yml run --rm api python -m app.scripts.seed_data
 ```
 
 ## Caddy и общая Docker-сеть

@@ -14,6 +14,15 @@ class Settings(BaseSettings):
     jwt_algorithm: str = "HS256"
     jwt_ttl_minutes: int = 60
 
+    demo_user_enabled: bool = False
+    demo_email: str | None = None
+    demo_password: str | None = None
+
+    synthetic_users_enabled: bool = False
+    synthetic_users_count: int = 100
+    synthetic_users_email_prefix: str = "synthetic"
+    synthetic_users_password: str | None = None
+
     backend_cors_origins: str = ""
 
     model_config = SettingsConfigDict(
