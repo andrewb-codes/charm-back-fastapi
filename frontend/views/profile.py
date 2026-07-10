@@ -2,9 +2,9 @@ from typing import Any
 
 import streamlit as st
 
-from core.api import request, show_error
-from core.session import auth_token, logout
-from core.utils import parse_birthdate
+from frontend.core.api import request, show_error
+from frontend.core.session import auth_token, logout
+from frontend.core.utils import parse_birthdate
 
 
 def render_profile(profile: dict[str, Any]) -> None:
@@ -47,6 +47,8 @@ def render_profile(profile: dict[str, Any]) -> None:
             token=auth_token(),
             json=payload,
         )
+        if response is None:
+            return
         if response.is_success:
             st.session_state.current_profile = response.json()
             st.success("Profile updated.")
@@ -76,6 +78,8 @@ def render_account_settings(profile: dict[str, Any]) -> None:
                 "version": profile["version"],
             },
         )
+        if response is None:
+            return
         if response.is_success:
             st.session_state.current_profile = response.json()
             st.success("Email updated.")
@@ -101,6 +105,8 @@ def render_account_settings(profile: dict[str, Any]) -> None:
                 "version": profile["version"],
             },
         )
+        if response is None:
+            return
         if response.is_success:
             st.session_state.current_profile = response.json()
             st.success("Password updated.")
@@ -118,6 +124,8 @@ def render_account_settings(profile: dict[str, Any]) -> None:
             return
 
         response = request("DELETE", "/api/v1/profile", token=auth_token())
+        if response is None:
+            return
         if response.is_success:
             logout()
         else:

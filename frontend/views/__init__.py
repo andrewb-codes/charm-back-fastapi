@@ -1,1 +1,1 @@
-
+"""Streamlit application views."""

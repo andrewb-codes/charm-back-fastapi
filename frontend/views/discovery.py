@@ -2,8 +2,8 @@ from typing import Any
 
 import streamlit as st
 
-from core.api import request, show_error
-from core.session import auth_token
+from frontend.core.api import request, show_error
+from frontend.core.session import auth_token
 
 
 def render_candidate_card(candidate: dict[str, Any]) -> None:
@@ -30,6 +30,8 @@ def render_candidate_card(candidate: dict[str, Any]) -> None:
                 token=auth_token(),
                 json={"to_profile_id": candidate["id"], "action": action},
             )
+            if response is None:
+                return
             if response.is_success:
                 st.rerun()
             else:
@@ -40,6 +42,8 @@ def render_charm() -> None:
     st.subheader("Discovery")
 
     response = request("GET", "/api/v1/charm", token=auth_token())
+    if response is None:
+        return
     if not response.is_success:
         show_error(response)
         return

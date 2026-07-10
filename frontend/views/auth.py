@@ -1,18 +1,19 @@
 import streamlit as st
 
-from core.api import request, show_error
+from frontend.core.api import request, show_error
+from frontend.core.session import login
 
 
 def render_auth() -> None:
     st.title("Charm")
 
-    login_tab, registration_tab = st.tabs(["Login", "Register"])
+    login_tab, registration_tab = st.tabs(["Sign in", "Register"])
 
     with login_tab:
-        with st.form("login"):
+        with st.form("login_form"):
             email = st.text_input("Email", key="login_email")
             password = st.text_input("Password", type="password", key="login_password")
-            submitted = st.form_submit_button("Login")
+            submitted = st.form_submit_button("Sign in")
 
         if submitted:
             response = request(
@@ -20,14 +21,15 @@ def render_auth() -> None:
                 "/api/v1/auth/login",
                 json={"email": email, "password": password},
             )
+            if response is None:
+                return
             if response.is_success:
-                st.session_state.access_token = response.json()["access_token"]
-                st.rerun()
+                login(response.json()["access_token"])
             else:
                 show_error(response)
 
     with registration_tab:
-        with st.form("registration"):
+        with st.form("registration_form"):
             email = st.text_input("Email", key="registration_email")
             password = st.text_input("Password", type="password", key="registration_password")
             submitted = st.form_submit_button("Create account")
@@ -38,7 +40,9 @@ def render_auth() -> None:
                 "/api/v1/registration",
                 json={"email": email, "password": password},
             )
+            if response is None:
+                return
             if response.is_success:
-                st.success("Account created. You can login now.")
+                st.success("Account created. You can sign in now.")
             else:
                 show_error(response)

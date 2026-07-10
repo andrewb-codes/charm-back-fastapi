@@ -1,7 +1,9 @@
+from typing import Any
+
 import streamlit as st
 
-from core.api import request, show_error
-from core.session import auth_token
+from frontend.core.api import request, show_error
+from frontend.core.session import auth_token
 
 
 def refresh_admin_profiles() -> None:
@@ -9,7 +11,7 @@ def refresh_admin_profiles() -> None:
     st.rerun()
 
 
-def render_admin_profile_controls(profile: dict[str, object]) -> None:
+def render_admin_profile_controls(profile: dict[str, Any]) -> None:
     profile_id = profile["id"]
     version = profile["version"]
 
@@ -34,6 +36,8 @@ def render_admin_profile_controls(profile: dict[str, object]) -> None:
                 token=auth_token(),
                 json={"status": status, "version": version},
             )
+            if response is None:
+                return
             if response.is_success:
                 st.success("Status updated.")
                 refresh_admin_profiles()
@@ -59,6 +63,8 @@ def render_admin_profile_controls(profile: dict[str, object]) -> None:
                 token=auth_token(),
                 json={"role": role, "version": version},
             )
+            if response is None:
+                return
             if response.is_success:
                 st.success("Role updated.")
                 refresh_admin_profiles()
@@ -66,7 +72,7 @@ def render_admin_profile_controls(profile: dict[str, object]) -> None:
                 show_error(response)
 
 
-def render_admin_profiles() -> None:
+def render_admin_profiles(current_profile: dict[str, Any]) -> None:
     st.subheader("Profiles")
 
     with st.form("admin_profiles_filters"):
@@ -97,6 +103,8 @@ def render_admin_profiles() -> None:
             token=auth_token(),
             params=params,
         )
+        if response is None:
+            return
         if response.is_success:
             st.session_state.admin_profiles = response.json()
         else:
@@ -110,20 +118,30 @@ def render_admin_profiles() -> None:
         st.info("No profiles found.")
         return
 
-    for item in profiles:
+    st.dataframe(profiles, use_container_width=True, hide_index=True)
+    st.caption("More results available." if result["has_next"] else "Last page.")
+
+    editable_profiles = [profile for profile in profiles if profile["id"] != current_profile["id"]]
+    if not editable_profiles:
+        return
+
+    profile_by_label = {
+        f"{profile['email']} · #{profile['id']}": profile for profile in editable_profiles
+    }
+    selected_label = st.selectbox("Profile to manage", list(profile_by_label))
+    selected_profile = profile_by_label[selected_label]
+
+    with st.container(border=True):
+        item = selected_profile
         title = item["email"]
         if item.get("name") or item.get("surname"):
             title = f"{item.get('name') or ''} {item.get('surname') or ''}".strip()
 
-        with st.container(border=True):
-            st.write(title)
-            st.caption(f"ID {item['id']} | {item['email']} | {item['role']} | {item['status']}")
-            if item.get("age") is not None:
-                st.write(f"Age: {item['age']}")
-            if item.get("about"):
-                st.write(item["about"])
-            st.caption(f"Version: {item['version']}")
-            render_admin_profile_controls(item)
-
-    if result["has_next"]:
-        st.info("There are more profiles. Increase page or page size to continue.")
+        st.write(title)
+        st.caption(f"ID {item['id']} | {item['email']} | {item['role']} | {item['status']}")
+        if item.get("age") is not None:
+            st.write(f"Age: {item['age']}")
+        if item.get("about"):
+            st.write(item["about"])
+        st.caption(f"Version: {item['version']}")
+        render_admin_profile_controls(item)

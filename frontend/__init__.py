@@ -1,1 +1,1 @@
-
+"""Streamlit frontend application package."""

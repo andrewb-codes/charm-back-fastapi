@@ -1,7 +1,7 @@
 import streamlit as st
 
-from core.api import request, show_error
-from core.session import auth_token
+from frontend.core.api import request, show_error
+from frontend.core.session import auth_token
 
 
 def render_matches() -> None:
@@ -13,6 +13,8 @@ def render_matches() -> None:
         token=auth_token(),
         params={"page": 1, "page_size": 20},
     )
+    if response is None:
+        return
     if not response.is_success:
         show_error(response)
         return

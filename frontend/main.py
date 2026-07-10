@@ -1,11 +1,11 @@
 import streamlit as st
 
-from core.session import load_profile, logout
-from views.admin import render_admin_profiles
-from views.auth import render_auth
-from views.discovery import render_charm
-from views.matches import render_matches
-from views.profile import render_account_settings, render_profile
+from frontend.core.session import load_profile, logout
+from frontend.views.admin import render_admin_profiles
+from frontend.views.auth import render_auth
+from frontend.views.discovery import render_charm
+from frontend.views.matches import render_matches
+from frontend.views.profile import render_account_settings, render_profile
 
 
 def render_app() -> None:
@@ -36,7 +36,7 @@ def render_app() -> None:
         render_matches()
     if profile["role"] == "ADMIN":
         with tabs[4]:
-            render_admin_profiles()
+            render_admin_profiles(profile)
 
 
 st.set_page_config(page_title="Charm", page_icon="CH", layout="centered")

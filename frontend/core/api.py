@@ -3,7 +3,7 @@ from typing import Any
 import httpx
 import streamlit as st
 
-from core.config import frontend_settings
+from frontend.config import frontend_settings
 
 API_URL = frontend_settings.streamlit_api_url.rstrip("/")
 
@@ -15,17 +15,37 @@ def request(
     token: str | None = None,
     json: dict[str, Any] | None = None,
     params: dict[str, Any] | None = None,
-) -> httpx.Response:
+    timeout: float = 15,
+) -> httpx.Response | None:
     headers = {"Authorization": f"Bearer {token}"} if token else None
 
-    with httpx.Client(base_url=API_URL, timeout=10.0) as client:
-        return client.request(method, path, json=json, params=params, headers=headers)
+    try:
+        return httpx.request(
+            method,
+            f"{API_URL}{path}",
+            headers=headers,
+            json=json,
+            params=params,
+            timeout=timeout,
+        )
+    except httpx.RequestError:
+        st.error("API is unavailable.")
+        return None
+
+
+def error_detail(response: httpx.Response) -> str:
+    try:
+        payload = response.json()
+    except ValueError:
+        return response.text or f"HTTP {response.status_code}"
+
+    if isinstance(payload, dict):
+        detail = payload.get("detail")
+        if isinstance(detail, str):
+            return detail
+
+    return f"HTTP {response.status_code}"
 
 
 def show_error(response: httpx.Response) -> None:
-    try:
-        detail = response.json().get("detail", response.text)
-    except ValueError:
-        detail = response.text
-
-    st.error(f"{response.status_code}: {detail}")
+    st.error(error_detail(response))
