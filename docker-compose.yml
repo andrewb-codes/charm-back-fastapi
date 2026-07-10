@@ -6,7 +6,7 @@ services:
       POSTGRES_USER: "${POSTGRES_USER:?POSTGRES_USER is required}"
       POSTGRES_PASSWORD: "${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}"
     ports:
-      - "${POSTGRES_PORT}:5432"
+      - "127.0.0.1:${POSTGRES_PORT}:5432"
     volumes:
       - charm_postgres_data:/var/lib/postgresql/data
     healthcheck:
@@ -22,6 +22,9 @@ services:
     environment:
       DATABASE_URL: "${DATABASE_URL:?DATABASE_URL is required}"
       JWT_SECRET: "${JWT_SECRET:?JWT_SECRET is required}"
+      BOOTSTRAP_ADMIN_ENABLED: "${BOOTSTRAP_ADMIN_ENABLED:?BOOTSTRAP_ADMIN_ENABLED is required}"
+      BOOTSTRAP_ADMIN_EMAIL: "${BOOTSTRAP_ADMIN_EMAIL:?BOOTSTRAP_ADMIN_EMAIL is required}"
+      BOOTSTRAP_ADMIN_PASSWORD: "${BOOTSTRAP_ADMIN_PASSWORD:?BOOTSTRAP_ADMIN_PASSWORD is required}"
       DEMO_USER_ENABLED: "${DEMO_USER_ENABLED}"
       DEMO_EMAIL: "${DEMO_EMAIL}"
       DEMO_PASSWORD: "${DEMO_PASSWORD}"
@@ -29,8 +32,6 @@ services:
       SYNTHETIC_USERS_COUNT: "${SYNTHETIC_USERS_COUNT}"
       SYNTHETIC_USERS_EMAIL_PREFIX: "${SYNTHETIC_USERS_EMAIL_PREFIX}"
       SYNTHETIC_USERS_PASSWORD: "${SYNTHETIC_USERS_PASSWORD}"
-    ports:
-      - "${API_PORT}:8000"
     depends_on:
       postgres:
         condition: service_healthy
@@ -45,7 +46,7 @@ services:
       context: .
       dockerfile: Dockerfile.frontend
     environment:
-      STREAMLIT_API_URL: "${STREAMLIT_API_URL:?STREAMLIT_API_URL is required}"
+      STREAMLIT_API_URL: "http://api:8000"
     ports:
       - "${STREAMLIT_PORT}:8501"
     depends_on:

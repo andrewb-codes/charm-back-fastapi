@@ -11,12 +11,15 @@ docker_public_network: web
 frontend_network_alias: charm-frontend
 
 app_env:
-  DATABASE_URL: postgresql+asyncpg://charm_user:{{ postgres_password }}@postgres:5432/charm
+  DATABASE_URL: postgresql+asyncpg://charm_user:{{ postgres_password | urlencode }}@postgres:5432/charm
   JWT_SECRET: "{{ jwt_secret }}"
-  STREAMLIT_API_URL: http://api:8000
   POSTGRES_DB: charm
   POSTGRES_USER: charm_user
   POSTGRES_PASSWORD: "{{ postgres_password }}"
+
+  BOOTSTRAP_ADMIN_ENABLED: "true"
+  BOOTSTRAP_ADMIN_EMAIL: admin@example.com
+  BOOTSTRAP_ADMIN_PASSWORD: "{{ bootstrap_admin_password }}"
 
   DEMO_USER_ENABLED: "true"
   DEMO_EMAIL: demo@example.com
