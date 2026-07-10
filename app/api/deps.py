@@ -33,7 +33,7 @@ async def get_current_profile(
         raise UnauthorizedError()
 
     try:
-        payload = decode_access_token(credentials.credentials)
+        payload = decode_access_token(str(credentials.credentials))
         profile_id = int(payload["sub"])
     except (InvalidTokenError, KeyError, ValueError) as exc:
         raise UnauthorizedError() from exc
