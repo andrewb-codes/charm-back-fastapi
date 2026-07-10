@@ -14,6 +14,10 @@ class Settings(BaseSettings):
     jwt_algorithm: str = "HS256"
     jwt_ttl_minutes: int = 60
 
+    bootstrap_admin_enabled: bool = False
+    bootstrap_admin_email: str | None = None
+    bootstrap_admin_password: str | None = None
+
     demo_user_enabled: bool = False
     demo_email: str | None = None
     demo_password: str | None = None
