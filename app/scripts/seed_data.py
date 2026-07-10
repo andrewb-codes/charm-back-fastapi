@@ -25,9 +25,7 @@ async def seed_admin(repository: ProfileRepository) -> None:
 
     if existing is not None:
         if existing.role != Role.ADMIN:
-            raise RuntimeError(
-                f"Profile {normalized_email} exists but is not an admin"
-            )
+            raise RuntimeError(f"Profile {normalized_email} exists but is not an admin")
         return
 
     repository.session.add(
@@ -74,7 +72,9 @@ async def seed_synthetic_users(repository: ProfileRepository) -> None:
     password = settings.synthetic_users_password
 
     if password is None or count is None:
-        raise RuntimeError("SYNTHETIC_USERS password and count are required when synthetic users are enabled")
+        raise RuntimeError(
+            "SYNTHETIC_USERS password and count are required when synthetic users are enabled"
+        )
 
     if count <= 0:
         raise RuntimeError("SYNTHETIC_USERS_COUNT must be a positive integer")
