@@ -14,10 +14,12 @@ def render_app() -> None:
         render_auth()
         return
 
-    st.sidebar.title("Charm")
-    st.sidebar.write(profile["email"])
-    if st.sidebar.button("Logout"):
-        logout()
+    with st.sidebar:
+        st.title("Charm")
+        st.write(profile["email"])
+        st.caption(f"{profile['role']} · {profile['status']}")
+        if st.button("Sign out", use_container_width=True):
+            logout()
 
     tab_names = ["Profile", "Account", "Discovery", "Matches"]
     if profile["role"] == "ADMIN":
