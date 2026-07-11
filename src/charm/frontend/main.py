@@ -41,5 +41,5 @@ def render_app() -> None:
             render_admin_profiles(profile)
 
 
-st.set_page_config(page_title="Charm", page_icon="CH", layout="centered")
+st.set_page_config(page_title="Charm", page_icon=":material/favorite:", layout="centered")
 render_app()
