@@ -9,7 +9,7 @@ JWT-аутентификацию, управление профилем, discove
 Публичный frontend на production-сервере открывается через домен, настроенный в Caddy:
 
 ```text
-`https://<demo-domain>`
+`https://charm.andrewb.ru`
 ```
 
 ```text
