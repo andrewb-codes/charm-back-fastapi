@@ -98,7 +98,7 @@ ansible-playbook playbook.yml \
   --vault-password-file ~/.ansible/charm-vault-pass
 ```
 
-Ожидаемые поля Vault перечислены в `vault.yml.example`. Application images 
+Ожидаемые поля Vault перечислены в `vault.yml.example`. Application images
 должны быть заранее опубликованы в GHCR.
 
 ## Диагностика
@@ -111,12 +111,12 @@ docker compose -f docker-compose.prod.yml logs -f frontend
 docker compose -f docker-compose.prod.yml logs -f postgres
 docker compose -f docker-compose.prod.yml run --rm api alembic current
 docker compose -f docker-compose.prod.yml run --rm api alembic upgrade head
-docker compose -f docker-compose.prod.yml run --rm api python -m app.scripts.seed_data
+docker compose -f docker-compose.prod.yml run --rm api python -m charm.scripts.seed_data
 ```
 
 ## Ротация пароля PostgreSQL
 
-`POSTGRES_PASSWORD` применяется только при первичной инициализации пустого volume. 
+`POSTGRES_PASSWORD` применяется только при первичной инициализации пустого volume.
 Для существующей БД сначала измените пароль роли:
 
 ```bash

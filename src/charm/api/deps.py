@@ -1,0 +1,54 @@
+from fastapi import Depends
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from charm.core.exceptions import ForbiddenError, UnauthorizedError
+from charm.core.security import InvalidTokenError, decode_access_token
+from charm.db.session import get_db_session
+from charm.models.profile import Profile, Role
+from charm.repositories.profiles import ProfileRepository
+from charm.services.charm import CharmService
+from charm.services.profiles import ProfileService
+
+bearer_scheme = HTTPBearer(auto_error=False)
+
+
+def get_profile_service(
+    session: AsyncSession = Depends(get_db_session),
+) -> ProfileService:
+    return ProfileService(session)
+
+
+def get_charm_service(
+    session: AsyncSession = Depends(get_db_session),
+) -> CharmService:
+    return CharmService(session)
+
+
+async def get_current_profile(
+    credentials: HTTPAuthorizationCredentials | None = Depends(bearer_scheme),
+    session: AsyncSession = Depends(get_db_session),
+) -> Profile:
+    if credentials is None:
+        raise UnauthorizedError()
+
+    try:
+        payload = decode_access_token(str(credentials.credentials))
+        profile_id = int(payload["sub"])
+    except (InvalidTokenError, KeyError, ValueError) as exc:
+        raise UnauthorizedError() from exc
+
+    repository = ProfileRepository(session)
+    profile = await repository.get_by_id(profile_id)
+
+    if profile is None:
+        raise UnauthorizedError()
+
+    return profile
+
+
+def require_admin(profile: Profile = Depends(get_current_profile)) -> Profile:
+    if profile.role != Role.ADMIN:
+        raise ForbiddenError()
+
+    return profile

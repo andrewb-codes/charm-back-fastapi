@@ -1,6 +1,7 @@
-from app.db.session import AsyncSessionLocal
 from httpx import AsyncClient
 from sqlalchemy import text
+
+from charm.db.session import AsyncSessionLocal
 
 
 async def register_and_login(

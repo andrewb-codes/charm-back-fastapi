@@ -60,7 +60,7 @@ jobs:
         run: uv run ruff check .
 
       - name: Run mypy
-        run: uv run mypy app frontend
+        run: uv run mypy src tests
 
       - name: Run tests
         run: uv run pytest

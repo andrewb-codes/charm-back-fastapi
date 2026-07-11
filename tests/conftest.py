@@ -1,10 +1,11 @@
 from collections.abc import AsyncGenerator
 
 import pytest
-from app.db.session import AsyncSessionLocal
-from app.main import app
 from httpx import ASGITransport, AsyncClient
 from sqlalchemy import text
+
+from charm.api.main import app
+from charm.db.session import AsyncSessionLocal
 
 
 @pytest.fixture(autouse=True)

@@ -1,10 +1,11 @@
 from logging.config import fileConfig
 
-import app.models  # noqa: F401
 from alembic import context
-from app.core.config import settings
-from app.db.base import Base
 from sqlalchemy import engine_from_config, pool
+
+import charm.models  # noqa: F401
+from charm.core.config import settings
+from charm.db.base import Base
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.

@@ -38,13 +38,12 @@ dev = [
   "types-python-jose>=3.3",
 ]
 
-[tool.setuptools.packages.find]
-include = ["app*"]
-exclude = ["alembic*"]
-
 [build-system]
-requires = ["setuptools>=69", "wheel"]
-build-backend = "setuptools.build_meta"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/charm"]
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
@@ -55,14 +54,14 @@ testpaths = ["tests"]
 [tool.ruff]
 line-length = 100
 target-version = "py312"
-src = ["app", "frontend", "tests", "alembic"]
+src = ["src", "tests", "alembic"]
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP", "B", "SIM"]
 ignore = ["E501"]
 
 [tool.ruff.lint.per-file-ignores]
-"app/api/**/*.py" = ["B008"]
+"src/charm/api/**/*.py" = ["B008"]
 
 [tool.ruff.format]
 quote-style = "double"
@@ -71,7 +70,7 @@ line-ending = "auto"
 
 [tool.mypy]
 python_version = "3.12"
-files = ["app", "frontend"]
+files = ["src", "tests"]
 ignore_missing_imports = true
 check_untyped_defs = true
 warn_unused_configs = true
