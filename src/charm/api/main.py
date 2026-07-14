@@ -1,3 +1,6 @@
+from collections.abc import AsyncIterator
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
@@ -10,6 +13,23 @@ from charm.api.v1.profile import router as profile_router
 from charm.api.v1.registration import router as registration_router
 from charm.core.config import settings
 from charm.core.exceptions import AppError
+from charm.rate_limit.service import RateLimitService
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI) -> AsyncIterator[None]:
+    rate_limiter = RateLimitService.from_settings(settings)
+
+    if rate_limiter.enabled and not await rate_limiter.check_storage():
+        raise RuntimeError("Rate limit Redis storage is not available")
+
+    app.state.rate_limiter = rate_limiter
+
+    try:
+        yield
+    finally:
+        app.state.rate_limiter = None
+
 
 app = FastAPI(
     title=settings.app_name,
@@ -18,6 +38,7 @@ app = FastAPI(
         "REST API for Charm: authentication, profiles, discovery, matches, "
         "and admin profile management."
     ),
+    lifespan=lifespan,
 )
 
 if settings.cors_origins:
@@ -44,4 +65,11 @@ async def health() -> dict[str, str]:
 
 @app.exception_handler(AppError)
 async def app_error_handler(_: Request, exc: AppError) -> JSONResponse:
-    return JSONResponse(status_code=exc.status_code, content={"detail": exc.detail})
+    headers = None
+
+    if hasattr(exc, "retry_after"):
+        headers = {"Retry-After": str(exc.retry_after)}
+
+    return JSONResponse(
+        status_code=exc.status_code, content={"detail": exc.detail}, headers=headers
+    )
