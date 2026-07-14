@@ -290,3 +290,20 @@ async def test_change_password_with_wrong_version_returns_409(
 
     assert response.status_code == 409
     assert response.json() == {"detail": "error.profile.version_conflict"}
+
+
+async def test_delete_profile_returns_204_and_invalidates_token(client: AsyncClient) -> None:
+    token = await register_and_login(client)
+
+    delete_response = await client.delete(
+        "/api/v1/profile",
+        headers={"Authorization": f"Bearer {token}"},
+    )
+    profile_response = await client.get(
+        "/api/v1/profile",
+        headers={"Authorization": f"Bearer {token}"},
+    )
+
+    assert delete_response.status_code == 204
+    assert profile_response.status_code == 401
+    assert profile_response.json() == {"detail": "error.auth.unauthorized"}

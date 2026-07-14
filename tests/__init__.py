@@ -1,1 +1,1 @@
-"""Integration tests for the Charm API."""
+"""Test suite for the Charm API."""
