@@ -3,6 +3,8 @@ from fastapi import APIRouter, Depends, status
 from charm.api.deps import get_charm_service, get_current_profile
 from charm.api.presenters.profile import build_public_profile_response
 from charm.models import Profile
+from charm.rate_limit.deps import rate_limit_user
+from charm.rate_limit.rules import CHARM_REACT_LIMIT, CHARM_READ_LIMIT
 from charm.schemas.charm import CharmRequest, NextCharmResponse
 from charm.services.charm import CharmService
 
@@ -13,6 +15,7 @@ router = APIRouter(prefix="/api/v1/charm", tags=["Charm"])
 async def react(
     request: CharmRequest,
     profile: Profile = Depends(get_current_profile),
+    _: None = Depends(rate_limit_user(CHARM_REACT_LIMIT)),
     service: CharmService = Depends(get_charm_service),
 ) -> None:
     await service.react(
@@ -25,6 +28,7 @@ async def react(
 @router.get("", response_model=NextCharmResponse)
 async def get_next(
     profile: Profile = Depends(get_current_profile),
+    _: None = Depends(rate_limit_user(CHARM_READ_LIMIT)),
     service: CharmService = Depends(get_charm_service),
 ) -> NextCharmResponse:
     candidate = await service.get_next(profile=profile)

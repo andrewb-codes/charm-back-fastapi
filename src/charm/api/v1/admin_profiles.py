@@ -3,6 +3,8 @@ from fastapi import APIRouter, Depends, Query
 from charm.api.deps import get_profile_service, require_admin
 from charm.api.presenters.profile import build_profile_response
 from charm.models import Profile, Role, Status
+from charm.rate_limit.deps import rate_limit_user
+from charm.rate_limit.rules import ADMIN_READ_LIMIT, ADMIN_WRITE_LIMIT
 from charm.schemas.profile import (
     AdminProfileRoleUpdateRequest,
     AdminProfilesPageResponse,
@@ -24,6 +26,7 @@ async def search_profiles(
     page: int = Query(default=1, ge=1),
     page_size: int = Query(default=20, ge=1, le=100),
     _: Profile = Depends(require_admin),
+    __: None = Depends(rate_limit_user(ADMIN_READ_LIMIT)),
     service: ProfileService = Depends(get_profile_service),
 ) -> AdminProfilesPageResponse:
     items, has_next = await service.search_profiles(
@@ -47,6 +50,7 @@ async def change_profile_status(
     profile_id: int,
     request: AdminProfileStatusUpdateRequest,
     admin_profile: Profile = Depends(require_admin),
+    _: None = Depends(rate_limit_user(ADMIN_WRITE_LIMIT)),
     service: ProfileService = Depends(get_profile_service),
 ) -> ProfileResponse:
     profile = await service.change_profile_status(
@@ -63,6 +67,7 @@ async def change_profile_role(
     profile_id: int,
     request: AdminProfileRoleUpdateRequest,
     admin_profile: Profile = Depends(require_admin),
+    _: None = Depends(rate_limit_user(ADMIN_WRITE_LIMIT)),
     service: ProfileService = Depends(get_profile_service),
 ) -> ProfileResponse:
     profile = await service.change_profile_role(

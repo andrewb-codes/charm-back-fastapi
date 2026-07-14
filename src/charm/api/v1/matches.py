@@ -3,6 +3,8 @@ from fastapi import APIRouter, Depends, Query
 from charm.api.deps import get_current_profile, get_profile_service
 from charm.api.presenters.profile import build_public_profile_response
 from charm.models import Profile
+from charm.rate_limit.deps import rate_limit_user
+from charm.rate_limit.rules import MATCHES_READ_LIMIT
 from charm.schemas.profile import MatchesResponse
 from charm.services.profiles import ProfileService
 
@@ -14,6 +16,7 @@ async def get_matches(
     page: int = Query(default=1, ge=1),
     page_size: int = Query(default=10, ge=1, le=100),
     profile: Profile = Depends(get_current_profile),
+    _: None = Depends(rate_limit_user(MATCHES_READ_LIMIT)),
     service: ProfileService = Depends(get_profile_service),
 ) -> MatchesResponse:
     items, has_next = await service.get_matches(
