@@ -1,5 +1,6 @@
 postgres_password: replace-with-a-long-random-password
 jwt_secret: replace-with-a-long-random-secret
+rate_limit_key_secret: replace-with-a-long-random-secret
 bootstrap_admin_password: replace-with-a-long-random-password
 demo_password: replace-with-demo-password
 synthetic_users_password: replace-with-synthetic-users-password

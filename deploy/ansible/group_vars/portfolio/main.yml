@@ -13,6 +13,11 @@ frontend_network_alias: charm-frontend
 app_env:
   DATABASE_URL: postgresql+asyncpg://charm_user:{{ postgres_password | urlencode }}@postgres:5432/charm
   JWT_SECRET: "{{ jwt_secret }}"
+
+  RATE_LIMIT_ENABLED: "true"
+  RATE_LIMIT_REDIS_URL: async+redis://redis:6379/0
+  RATE_LIMIT_KEY_SECRET: "{{ rate_limit_key_secret }}"
+
   POSTGRES_DB: charm
   POSTGRES_USER: charm_user
   POSTGRES_PASSWORD: "{{ postgres_password }}"

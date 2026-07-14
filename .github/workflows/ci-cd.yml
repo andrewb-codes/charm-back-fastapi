@@ -28,11 +28,9 @@ jobs:
           --health-retries 10
 
     env:
-      APP_NAME: Charm API Test
-      DEBUG: "false"
       DATABASE_URL: postgresql+asyncpg://charm:charm@localhost:5432/charm_test
-      JWT_SECRET: test-secret
-      JWT_TTL_MINUTES: "60"
+      JWT_SECRET: test-jwt-secret
+      RATE_LIMIT_ENABLED: "false"
       BACKEND_CORS_ORIGINS: http://localhost:5173,http://127.0.0.1:5173
 
     steps:
@@ -140,6 +138,7 @@ jobs:
         env:
           POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
           JWT_SECRET: ${{ secrets.JWT_SECRET }}
+          RATE_LIMIT_KEY_SECRET: ${{ secrets.RATE_LIMIT_KEY_SECRET }}
           BOOTSTRAP_ADMIN_PASSWORD: ${{ secrets.BOOTSTRAP_ADMIN_PASSWORD }}
           DEMO_PASSWORD: ${{ secrets.DEMO_PASSWORD }}
           SYNTHETIC_USERS_PASSWORD: ${{ secrets.SYNTHETIC_USERS_PASSWORD }}
@@ -147,6 +146,7 @@ jobs:
           ansible-playbook playbook.yml \
             --extra-vars "postgres_password=${POSTGRES_PASSWORD}" \
             --extra-vars "jwt_secret=${JWT_SECRET}" \
+            --extra-vars "rate_limit_key_secret=${RATE_LIMIT_KEY_SECRET}" \
             --extra-vars "bootstrap_admin_password=${BOOTSTRAP_ADMIN_PASSWORD}" \
             --extra-vars "demo_password=${DEMO_PASSWORD}" \
             --extra-vars "synthetic_users_password=${SYNTHETIC_USERS_PASSWORD}" \

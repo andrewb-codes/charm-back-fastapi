@@ -18,6 +18,8 @@ api = [
   "pwdlib[argon2]>=0.2",
   "python-jose[cryptography]>=3.3",
   "email-validator>=2.2",
+  "limits[redis]>=5.8,<6",
+  "redis>=5.0",
 ]
 
 frontend = [
@@ -36,6 +38,7 @@ dev = [
   "ruff>=0.6",
   "mypy>=1.11",
   "types-python-jose>=3.3",
+  "asgi-lifespan>=2.1",
 ]
 
 [build-system]
