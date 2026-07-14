@@ -10,7 +10,10 @@ from charm.db.session import AsyncSessionLocal
 
 
 @pytest.fixture(autouse=True)
-async def clean_db() -> None:
+async def clean_db(request: pytest.FixtureRequest) -> None:
+    if request.node.get_closest_marker("no_db"):
+        return
+
     async with AsyncSessionLocal() as session:
         await session.execute(text("TRUNCATE TABLE profile_like, profile RESTART IDENTITY CASCADE"))
         await session.commit()

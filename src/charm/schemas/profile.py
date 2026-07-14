@@ -38,7 +38,7 @@ class ProfileUpdateRequest(BaseModel):
     birthdate: date | None = None
     about: str | None = Field(default=None, max_length=1000)
     gender: Gender | None = None
-    version: int
+    version: int = Field(ge=0)
 
     @field_validator("birthdate")
     @classmethod
@@ -51,13 +51,13 @@ class ProfileUpdateRequest(BaseModel):
 class EmailChangeRequest(BaseModel):
     new_email: EmailStr
     current_password: str = Field(min_length=1)
-    version: int
+    version: int = Field(ge=0)
 
 
 class PasswordChangeRequest(BaseModel):
     current_password: str = Field(min_length=1)
     new_password: str = Field(min_length=6)
-    version: int
+    version: int = Field(ge=0)
 
 
 class MatchesResponse(BaseModel):
