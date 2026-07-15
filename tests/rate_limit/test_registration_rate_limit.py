@@ -50,7 +50,7 @@ async def test_registration_passes_hashed_identifier_key_to_rate_limiter(
     _, identifier_key = service.calls[1]
 
     assert global_key == "rate-limit:register_global:global"
-    assert identifier_key.startswith("rate-limit:register_identifier:identifier:")
+    assert identifier_key.startswith("rate-limit:register_identifier:email:")
     assert "user@mail.com" not in identifier_key
 
 

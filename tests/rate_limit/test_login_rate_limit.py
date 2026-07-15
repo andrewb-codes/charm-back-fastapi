@@ -53,7 +53,7 @@ async def test_failed_login_applies_global_and_account_limits(client: AsyncClien
     ]
 
 
-async def test_login_account_key_does_not_contain_raw_email(client: AsyncClient) -> None:
+async def test_login_email_key_does_not_contain_raw_email(client: AsyncClient) -> None:
     await client.post(
         "/api/v1/registration",
         json={"email": "user@mail.com", "password": "123456"},
@@ -73,11 +73,11 @@ async def test_login_account_key_does_not_contain_raw_email(client: AsyncClient)
     assert response.status_code == 401
 
     _, global_key = service.calls[0]
-    _, account_key = service.calls[1]
+    _, email_key = service.calls[1]
 
     assert global_key == "rate-limit:login_global:global"
-    assert account_key.startswith("rate-limit:login_account:account:")
-    assert "user@mail.com" not in account_key
+    assert email_key.startswith("rate-limit:login_account:email:")
+    assert "user@mail.com" not in email_key
 
 
 async def test_login_returns_429_when_global_limit_exceeded(client: AsyncClient) -> None:

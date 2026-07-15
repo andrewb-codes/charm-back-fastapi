@@ -35,7 +35,7 @@ async def login(
             rule=LOGIN_ACCOUNT_LIMIT,
             key_factory=lambda: build_identifier_key(
                 scope=LOGIN_ACCOUNT_LIMIT.scope,
-                identifier_kind="account",
+                identifier_kind="email",
                 identifier=str(request.email),
                 secret=require_key_secret(settings.rate_limit_key_secret),
             ),

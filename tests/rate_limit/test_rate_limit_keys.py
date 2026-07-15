@@ -33,12 +33,12 @@ def test_hash_identifier_changes_with_secret() -> None:
 def test_identifier_key_does_not_contain_raw_identifier() -> None:
     key = build_identifier_key(
         scope=RateLimitScope.LOGIN_ACCOUNT,
-        identifier_kind="account",
+        identifier_kind="email",
         identifier="user@mail.com",
         secret="secret",
     )
 
-    assert key.startswith("rate-limit:login_account:account:")
+    assert key.startswith("rate-limit:login_account:email:")
     assert "user@mail.com" not in key
 
 
